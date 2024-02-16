@@ -244,6 +244,19 @@ export const Browser = () => {
             <h2 className="pl-2 pt-3 m-0 leading-tight ">Local File Pair</h2>
           </div>
 
+          {/*------------- STARTING MY NEW STUFF HERE ------------------*/}
+          <div
+            className="gap-2 w-52 h-12 items-center outline outline-1 outline-primary rounded-lg hover:bg-accent hover:bg-opacity-50"
+            id={'multiple-files'}
+            onClick={openFile}
+            aria-label={'multiple files'}
+            key={'multiplefiles'}
+          >
+            <h2 className="pl-2 pt-3 m-0 leading-tight ">Multiple File Pairs</h2>
+          </div>
+          {/*------------- END OF MY NEW STUFF -------------------------*/}
+
+
           {/* -------Manually enter azure credentials------- */}
           <CustomAzureForm
             setCurrentContainer={setCurrentContainer}
