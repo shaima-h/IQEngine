@@ -24,9 +24,6 @@ import TimeSelector from './components/time-selector';
 import { AnnotationViewer } from './components/annotation/annotation-viewer';
 import TimeSelectorMinimap from './components/time-selector-minimap';
 import { useWindowSize } from 'usehooks-ts';
-{/*-------- BEGIN MY NEW STUFF HERE ---------*/}
-import { Test } from './components/test';
-{/*-------- END MY NEW STUFF ----------------*/}
 
 export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab }) {
   const {
@@ -108,11 +105,6 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab }) {
       {currentTab === Tab.Time && <TimePlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.Frequency && <FrequencyPlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.IQ && <IQPlot displayedIQ={displayedIQ} />}
-
-      {/*------- BEGINNING MY NEW TEST TAB HERE --------*/}
-      {currentTab === Tab.TEST && <Test displayedIQ={displayedIQ} />}
-      {/*------- END OF MY NEW TEST TAB ----------------*/}
-
     </>
   );
 }
@@ -132,7 +124,6 @@ enum Tab {
   Time,
   Frequency,
   IQ,
-  TEST 
 }
 
 export function RecordingViewPage() {
