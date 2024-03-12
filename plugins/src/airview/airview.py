@@ -14,7 +14,10 @@ import math
 
 def findSumabsSumsqN_row(input, scale1, scale2):
     '''
-    Calculates the sum of absolute values, sum of squares, and the number of elements of one region.
+    Calculates the sum of absolute values, sum of squares, and the size of one region.
+    
+    return:
+    list[float]: sum of absolute values, sum of squares, and size.
     '''
     sumabs_sumsq_n = [None, None, None]
     # get regions with constant power - multiscale transform
@@ -31,14 +34,17 @@ def findSumabsSumsqN_row(input, scale1, scale2):
 
 def findSumabsSumsqN(input, scale1, scale2):
     '''
-    Calculates the sum of absolute values, sum of squares, and the number of elements.
+    Calculates the sum of absolute values, sum of squares, and size
+    
+    return:
+    list[float]: sum of absolute values, sum of squares, and size
     '''
     # sumabs_sumsq_n[0] = sum of absolute values
     # sumabs_sumsq_n[1] = sum of squares
-    # sumabs_sumsq_n = num of elements
+    # sumabs_sumsq_n = size
     sumabs_sumsq_n = [None, None, None]
     for i in range(input.shape[1]): # iterate through rows
-        loc_sumabs_sumsq_n = findSumabsSumsqN_row(input[i], scale1, scale2) # compute the sum of absolute values, sum of squares, and count for each row
+        loc_sumabs_sumsq_n = findSumabsSumsqN_row(input[i], scale1, scale2) # compute the sum of absolute values, sum of squares, and size for each row
         for j in range(len(sumabs_sumsq_n)):
             sumabs_sumsq_n[j] += loc_sumabs_sumsq_n[j] # accumulate results
     return sumabs_sumsq_n
@@ -50,11 +56,7 @@ def findAvgAdjDiffCoarse(input, scale1, scale2):
 	signals NOTE: This method just uses the "default" regions (those defined
 	by the resolution) to construct the coarse signal
 	
-	Parameters:
-	input (np array): the data
-    scale1 (int)
-    scale2 (int)
-	Returns:
+	return:
     list[float]: mean and standard deviation of data
     '''
     mean_stdev = [None, None]
@@ -67,6 +69,9 @@ def findAvgAdjDiffCoarse(input, scale1, scale2):
 def findTransmitters(input, scale, beta, jaccard_threshold, max_gap_rows, fft_size):
     '''
     Gets parametrs, calculates threshold, and runs algorithm.
+
+    return:
+    list[Transmitter]: detected transmitters
     '''
     # params[0] = mean of the pairwise difference of multiscale products
     # params[1] = std of the pairwise differences of multiscale products
