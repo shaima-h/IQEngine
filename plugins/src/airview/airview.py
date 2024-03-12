@@ -1,11 +1,66 @@
 '''
-Steps to write a plugin
-- Create a folder in plugins/src (for example, myplugin)
-- Create the python file. (For example, myplugin/myplugin.py)
-- The folder and file name must match exactly.
-- look at the template plugin or another similar plugin to the one you want to make, as a starting point
+from Steps to write a plugin
 - sample_rate and center_freq are standard and must be included in output
-- There must be at least one custom param or the Run Plugin button will not show up.
 - data_output is a required part of the interface
 - data_type is a required part of the interface
 '''
+
+# Copyright (c) 2023 Marc Lichtman.
+# Licensed under the MIT License.
+
+import numpy as np
+import json
+from pydantic.dataclasses import dataclass
+
+@dataclass
+class Plugin:
+    sample_rate: int = 0
+    center_freq: int = 0
+    
+    # custom params
+    beta: float = 1.0
+    scale: float = 1.0
+
+    def run(self, samples):
+        print(samples[0:10])
+        print(self.sample_rate)
+        print(self.center_freq)
+        print(self.param1)
+        print(self.param2)
+        print(self.param3)
+
+        # Your Plugin (and optionally, classification) code here
+        
+
+
+
+
+
+        # When making a detector, for the return, make a list, then for each detected emission, add one of these dicts to the list:   
+        annotations = []
+        for detected in detected_list:
+            an = {}
+            an['core:freq_lower_edge'] = 1 # Hz
+            an['core:freq_upper_edge'] = 2 # Hz
+            an['core:sample_start'] = 3
+            an['core:sample_count'] = 4
+            an["core:label"] = "Unknown"
+            annotations.append(an)
+
+        return {
+            "data_output" : [],
+            "annotations" : annotations
+        }
+
+if __name__ == "__main__":
+    # Example of how to test your plugin locally
+    fname = "C:\\Users\\marclichtman\\Downloads\\synthetic"
+    with open(fname + '.sigmf-meta', 'r') as f:
+        meta_data = json.load(f)
+    sample_rate = meta_data["global"]["core:sample_rate"]
+    center_freq = meta_data["captures"][0]['core:frequency']
+    samples = np.fromfile(fname + '.sigmf-data', dtype=np.complex64)
+    params = {'sample_rate': sample_rate, 'center_freq': center_freq, 'param1': 1, 'param2': 'test2', 'param3': 5.67}
+    plugin = Plugin(**params)
+    annotations = plugin.run(samples)
+    print(annotations)
