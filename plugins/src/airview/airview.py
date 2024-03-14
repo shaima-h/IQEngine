@@ -1,7 +1,8 @@
 ''' TODO
 - we are not using training data bc it is the same as input?
 - no filef and output_file
-- function descriptions
+- proper function descriptions/comments
+- MultiScaleDetection class? do we need classes if they just have methods and don't have any attributes in the java code?
 '''
 
 # Copyright (c) 2023 Marc Lichtman.
@@ -11,6 +12,95 @@ import numpy as np
 import json
 from pydantic.dataclasses import dataclass
 import math
+
+# def findTransmittersMultiScale():
+
+def multiscale_transform(input, scale1, scale2):
+    '''
+    Multiscale transform. Takes an input vector and two scales. Transforms
+	the signal and builds a coefficient tree. Gets the relevant indices for
+	each input level and reconstructs the signal twice, once using each set
+	of indices. Finally, the element-wise product is taken between the two
+	reconstructions and this is the multiscale transform.
+
+    returns:
+
+    '''
+    # coefficientTree = new CoefficientTree TODO
+
+
+def getRegionMeans(regions, input):
+    '''
+    Get mean in input for each region (bins with same values)
+    
+    return:
+
+    '''
+    # for each region
+    for i in range(len(regions)):
+        # get start and end column
+        start = regions[i][0]
+        end = regions[i][1]
+        # calculate mean
+        mean = 0.0
+        for j in range(start, end+1):
+            # TODO: line 845 in MultiScaleDetection.java '= +', doesn't actually accumulate, but results same if I change it to += or keep it as = +, is this function even used??
+            mean += input[j]
+
+        if end - start != 0:
+            mean /= end - start
+
+        # calculate sd
+        sd = 0.0
+        for k in range (start, end+1):
+            sd += (mean-input[k])**2
+        if end - start != 0:
+            sd = math.sqrt(sd/(end-start))
+        else:
+            sd = math.sqrt(sd)
+        
+        # store
+        regions.get[i][2] = mean
+        regions.get[i][3] = sd
+    
+    return regions
+
+def multiscale_detection_getDefaultRegions(input, scale1, scale2):
+    '''
+    Get the "default" regions, meaning only the regions of constant power
+	without any filtering or thresholding.
+
+    return:
+    list[float]: DESC HERE
+    '''
+    '''
+    Multiscale transform. Takes an input vector and two scales. Transforms
+	the signal and builds a coefficient tree. Gets the relevant indices for
+	each input level and reconstructs the signal twice, once using each set
+	of indices. Finally, the element-wise product is taken between the two
+	reconstructions and this is the multiscale transform.
+    '''
+    transformed = multiscale_transform(input, scale1, scale2)
+
+    # compute the regions
+    regions = []
+    previous_value = transformed[0]
+    start = 0
+    end = 0
+    for i in range (1, len(transformed)):
+        # if the value is remaining constant, increase the end index
+        if transformed[i] == previous_value and i != len(transformed)-1:
+            end += 1
+        
+        # add the region
+        regions.append([start, end, 0.0, 0.0, previous_value])
+        end += 1
+        start = end
+        previous_value = transformed[i]
+    
+    # calculate the mean/variance of each region
+    regions = getRegionMeans(regions, input)
+    return regions
 
 def findSumabsSumsqN_row(input, scale1, scale2):
     '''
@@ -23,7 +113,7 @@ def findSumabsSumsqN_row(input, scale1, scale2):
     # get regions with constant power - multiscale transform
     # regions is list of lists
     # TODO
-    regions = MultiScaleDetection.getDefaultRegions_training(input, scale1, scale2)
+    regions = multiscale_detection_getDefaultRegions(input, scale1, scale2)
 
     for i in range(1, len(regions)):
         sumabs_sumsq_n[0] += abs(regions.get[i - 1][4] - regions.get[i][4])
@@ -83,7 +173,7 @@ def findTransmitters(input, scale, beta, jaccard_threshold, max_gap_rows, fft_si
     
     # start of algorithm
     # TODO
-    detected = MultiScaleDetection.findTransmittersMultiScale(input, jaccard_threshold, scale,
+    detected = findTransmittersMultiScale(input, jaccard_threshold, scale,
 					params[0] + params[1] * beta, max_gap_rows)
     
     return detected # output annotations in main run function
