@@ -1,8 +1,16 @@
-''' TODO
-- we are not using training data bc it is the same as input?
-- no filef and output_file
-- proper function descriptions/comments
+''' TODO Notes
+- confirm: we are not using training data bc it is the same as input?
+- no filef and output_file (from FindTransmitters.java)
+- fix and make proper function descriptions/comments
 - MultiScaleDetection class? do we need classes if they just have methods and don't have any attributes in the java code?
+    - functions look so messy, how do we organize?
+    - multiple python files in airview folder? then import in this file? like:
+    airview/
+    ├── airview.py <- only has findTransmitters()
+    ├── MultiScale.py
+    ├── CoefficientTree.py
+    ├── FindParameters.py
+    └── ...
 '''
 
 # Copyright (c) 2023 Marc Lichtman.
