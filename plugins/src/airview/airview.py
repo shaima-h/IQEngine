@@ -45,10 +45,10 @@ def getRegionMeans(regions, input):
 
     '''
     # for each region
-    for i in range(len(regions)):
+    for region in regions:
         # get start and end column
-        start = regions[i][0]
-        end = regions[i][1]
+        start = region[0]
+        end = region[1]
         # calculate mean
         mean = 0.0
         for j in range(start, end+1):
@@ -68,8 +68,8 @@ def getRegionMeans(regions, input):
             sd = math.sqrt(sd)
         
         # store
-        regions.get[i][2] = mean
-        regions.get[i][3] = sd
+        region[2] = mean
+        region[3] = sd
     
     return regions
 
@@ -95,16 +95,16 @@ def multiscale_detection_getDefaultRegions(input, scale1, scale2):
     previous_value = transformed[0]
     start = 0
     end = 0
-    for i in range (1, len(transformed)):
+    for i, t in enumerate(transformed, start=1):
         # if the value is remaining constant, increase the end index
-        if transformed[i] == previous_value and i != len(transformed)-1:
+        if t == previous_value and i != len(transformed)-1:
             end += 1
         
         # add the region
         regions.append([start, end, 0.0, 0.0, previous_value])
         end += 1
         start = end
-        previous_value = transformed[i]
+        previous_value = t
     
     # calculate the mean/variance of each region
     regions = getRegionMeans(regions, input)
@@ -141,10 +141,10 @@ def findSumabsSumsqN(input, scale1, scale2):
     # sumabs_sumsq_n[1] = sum of squares
     # sumabs_sumsq_n = size
     sumabs_sumsq_n = [None, None, None]
-    for i in range(input.shape[1]): # iterate through rows
-        loc_sumabs_sumsq_n = findSumabsSumsqN_row(input[i], scale1, scale2) # compute the sum of absolute values, sum of squares, and size for each row
-        for j in range(len(sumabs_sumsq_n)):
-            sumabs_sumsq_n[j] += loc_sumabs_sumsq_n[j] # accumulate results
+    for i, row in enumerate(input): # iterate through rows
+        loc_sumabs_sumsq_n = findSumabsSumsqN_row(row, scale1, scale2) # compute the sum of absolute values, sum of squares, and size for each row
+        for j, s in enumerate(sumabs_sumsq_n):
+            s += loc_sumabs_sumsq_n[j] # accumulate results
     return sumabs_sumsq_n
 
 
