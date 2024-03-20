@@ -11,6 +11,7 @@
     ├── CoefficientTree.py
     ├── FindParameters.py
     └── ...
+- function names convention? underscores or camel case?
 '''
 
 # Copyright (c) 2023 Marc Lichtman.
@@ -33,15 +34,12 @@ def findTransmitters(input, scale, beta, jaccard_threshold, max_gap_rows, fft_si
     # params[0] = mean of the pairwise difference of multiscale products
     # params[1] = std of the pairwise differences of multiscale products
     # beta is a threshold-scaling parameter that determines how many standard deviations from the mean should pairwise differences be in order to be ranked as a outlier local maxima
-    params = find_parameters.findAvgAdjDiffCoarse(input, math.log2(input.shape[0]) - scale,
+    params, regions = find_parameters.findAvgAdjDiffCoarse(input, math.log2(input.shape[0]) - scale,
 				math.log2(input.shape[0]) - (scale + 1)) #TODO in java, why did he use Util.log2 intead of Math.log
     
     threshold = params[0] + params[1]*beta # threshold = mean + stdev*beta
     
-    # start of algorithm
-    # TODO
-    detected = multi_scale.findTransmittersMultiScale(input, jaccard_threshold, scale,
-					params[0] + params[1] * beta, max_gap_rows)
+    detected = multi_scale.findTransmittersMultiScale(input, regions, jaccard_threshold, scale, threshold, max_gap_rows)
     
     return detected # output annotations in main run function
     
