@@ -39,6 +39,9 @@ def sortRegions(regions, indexToSort):
 
 
 def stats(input, start, end):
+    '''
+    Compute mean power stats between start and end indices.
+    '''
     mean = 0.0
     sd = 0.0
     for i in range(start, end):
@@ -70,9 +73,6 @@ def threshold(regions, input, alpha):
     
     # now we have the filtered coarse representation. Need to get averages for each adjacent region
     list = []
-    # mean_sd = [None, None]
-    # max = [None, None]
-
     for i in range(1, len(edges)):
         # start with the widest band (leftmost to right most)
         mean_sd = stats(input, edges[i-1][0], edges[i][1])
