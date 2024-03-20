@@ -2,8 +2,8 @@
 
 setup:
 	@echo "Setting up project dependencies..."
-	@pip3 install -r api/requirements.txt
-	@pip3 install -r plugins/src/requirements.txt
+	@pip install -r api/requirements.txt
+	@pip install -r plugins/src/requirements.txt
 	@npm install --prefix ./client
 
 run-api:
