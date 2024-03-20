@@ -52,7 +52,7 @@ class Plugin:
     # custom params
     # TODO what values to use??
     beta: float = 1.0
-    scale: int = 1
+    scale: int = 3
 
     def run(self, samples):
         print(samples[0:10])
