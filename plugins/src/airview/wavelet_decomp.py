@@ -1,6 +1,57 @@
 import numpy as np
 import copy
 
+'''
+This is an exact copy of the WV1D.transform1D method in the Java repo.
+'''
+def transform1D(input_row, level):
+    t = copy.deepcopy(input_row)
+    avg = 0.0
+    diff = 0.0
+    tIndex = 0 
+    endpoint = 0
+    if level > 0:
+        endpoint = (int) (len(input_row) // (2**(level)))
+    else:
+        endpoint = len(input_row)
+    
+    for i in range(0, endpoint, 2):
+        avg = (input_row[i] + input_row[i + 1]) / 2
+        print("avg: " , avg, " after adding values ", input_row[i], input_row[i+1])
+        diff = avg - input_row[i + 1]
+        t[tIndex] = avg
+        t[(int)(tIndex + endpoint / 2)] = diff
+        tIndex += 1
+    if endpoint != 2:
+        level += 1
+        print("t at end: ", t)
+        t = transform1D(t, level)
+    return t
+
+
+'''
+This is an exact copy of the WV1D.reconstruct1D method in the Java repo.
+'''
+def reconstruct1D(input):
+    r = np.empty(len(input))
+    value = 0.0
+    sign = 0
+    detailCo = 0.0
+
+    for i in range(len(input)):
+        value = input[0]
+        
+        for k in range(1, (int)((math.log(len(input)) / math.log(2))) + 1):
+            sign = (int) ((-1)**(math.floor((i * 2**(k)) / len(input))))
+            detailCo = input[(int)(2**(k-1)) 
+                             + (int)(math.floor((i * 2**(k-1)) / len(input)))]
+            value += sign * detailCo
+        # print("value ", value)
+        r[i] = value
+    
+    return r
+
+
 def wavelet_decomposition(input):
     '''
     Calculate the wavelet transform of the entire input matrix using the 1D (single-row) 
