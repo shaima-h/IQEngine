@@ -35,7 +35,8 @@ def findTransmitters(input, scale, beta, jaccard_threshold, max_gap_rows, fft_si
     # params[1] = std of the pairwise differences of multiscale products
     # beta is a threshold-scaling parameter that determines how many standard deviations from the mean should pairwise differences be in order to be ranked as a outlier local maxima
     params, regions = find_parameters.findAvgAdjDiffCoarse(input, math.log2(input.shape[0]) - scale,
-				math.log2(input.shape[0]) - (scale + 1)) #TODO in java, why did he use Util.log2 intead of Math.log
+				math.log2(input.shape[0]) - (scale + 1)) #TODO in java, why did he use Util.log2 intead of Math.log 
+                                                         #NOTE Util.log2 may not function for arrays?
     
     threshold = params[0] + params[1]*beta # threshold = mean + stdev*beta
     
@@ -50,10 +51,11 @@ class Plugin:
     center_freq: int = 0
     
     # custom params
-    # TODO what values to use??
-    beta: float = 1.0
-    scale: int = 3
+    # TODO what values to use~no custom values since this is an automatic process. Select and go.
+        #NOTE need 1 custom param or the plugin will not show up
+    ignore_parameter = 0
 
+    #NOTE what is self doing to the inputted samples?
     def run(self, samples):
         print(samples[0:10])
         print(self.sample_rate)
@@ -72,16 +74,23 @@ class Plugin:
 
         detected = findTransmitters(samples, self.scale, self.beta, jaccard_threshold, max_gap_rows, fft_size)
 
-        # When making a detector, for the return, make a list, then for each detected emission, add one of these dicts to the list:   
+        # When making a detector, for the return, make a list, then for each detected emission, add one of these dicts to the list:
         # TODO
+        #new Transmitter(r, r, curr[0].col, curr[1].col)
+        #.col is a list columes we have identified a transmitter is at
+        #r is row index
         annotations = []
         for detection in detected:
+            #does each edge coincide with a certain column
+            edgeOne, edgeTwo, columnOne, columnTwo = detection
             an = {}
-            an['core:freq_lower_edge'] = 1 # Hz
-            an['core:freq_upper_edge'] = 2 # Hz
-            an['core:sample_start'] = 3
-            an['core:sample_count'] = 4
-            an["core:label"] = "Unknown"
+            #I copied a similar from simple detector since I am currently confused about the jobs of each core, looking into this tomorrow
+            #This should not give an accurate annotation
+            an['core:freq_lower_edge'] = int(edgeOne / fft_size * self.sample_rate - (self.sample_rate / 2) + self.center_freq) # Hz, was 1
+            an['core:freq_upper_edge'] = int((edgeOne + columnOne) / fft_size * self.sample_rate - (self.sample_rate / 2) + self.center_freq) # Hz, was 2
+            an['core:sample_start'] = int(edgeTwo * fft_size)#was 3
+            an['core:sample_count'] = int(columnTwo * fft_size)#was 4
+            an["core:label"] = "Unknown"#NOTE should we should set this to transmitters, since that is what AirView looks for?
             annotations.append(an)
 
         return {
@@ -91,7 +100,8 @@ class Plugin:
 
 if __name__ == "__main__":
     # Example of how to test your plugin locally
-    fname = "C:\\Users\\marclichtman\\Downloads\\synthetic"
+    #NOTE fname changes dependent on user, as it is locally testing your plugins, set equal to where you are storing your file pairs(data & meta)
+    fname = "/Users/abhome/IQEngineCapstone/DataToAnalyze"
     with open(fname + '.sigmf-meta', 'r') as f:
         meta_data = json.load(f)
     sample_rate = meta_data["global"]["core:sample_rate"]
