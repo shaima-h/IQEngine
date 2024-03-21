@@ -41,11 +41,10 @@ class Plugin:
     center_freq: int = 0
     
     # custom params
-    # TODO what values to use~no custom values since this is an automatic process. Select and go.
-        #NOTE need 1 custom param or the plugin will not show up
-    ignore_parameter = 0
+    # TODO should we calculate optimal beta and scale?
+    beta: float = 1.0
+    scale: int = 3
 
-    #NOTE what is self doing to the inputted samples?
     def run(self, samples):
         print(samples[0:10])
         print(self.sample_rate)
@@ -103,7 +102,7 @@ class Plugin:
 if __name__ == "__main__":
     # Example of how to test your plugin locally
     #NOTE fname changes dependent on user, as it is locally testing your plugins, set equal to where you are storing your file pairs(data & meta)
-    fname = "/Users/abhome/IQEngineCapstone/DataToAnalyze"
+    fname = "/Users/shaimahussaini/classes/icsi499/file_pairs/synthetic"
     with open(fname + '.sigmf-meta', 'r') as f:
         meta_data = json.load(f)
     sample_rate = meta_data["global"]["core:sample_rate"]
