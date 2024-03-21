@@ -45,7 +45,9 @@ def updateTransmitters(changes, t, r, jaccard_threshold, max_gap):
             # initialize found to false for this edge array
             found = False
             # loop through transmitters, starting with most recent (to catch active transmitters)
-            for i, tx in reversed(list(enumerate(t))):
+            # for i, tx in reversed(list(enumerate(t))):
+            for i in range(len(t) - 1, -1):
+                tx = t[i]
                 # if the transmitter + edges match within jaccard threshold
                 if jaccard_value(tx, curr) >= jaccard_threshold:
                     found = True # we've matched the edge[] with a transmitter
