@@ -158,14 +158,18 @@ def multiscale_transform(input, scale1, scale2):
     returns:
 
     '''
-    t = wavelet_decomp.wavelet_decomposition(input)
-    #r = wavelet_decomp.reconstruct1D(input)
+    t = wavelet_decomp.transform1D(input)
+
+    relevant_values1 = wavelet_decomp.get_values(t, scale1)
+    relevant_values2 = wavelet_decomp.get_values(t, scale2)
+    r1 = wavelet_decomp.reconstruct1D(relevant_values1)
+    r2 = wavelet_decomp.reconstruct1D(relevant_values2)
 
     if len(t) != len(r):
         raise ValueError("Error: Cannot multiply vectors of unequal length.")
     
     # multiply element wise
-    return np.multiply(t, r)
+    return np.multiply(r1, r2)
 
 
 def getRegionMeans(regions, input):

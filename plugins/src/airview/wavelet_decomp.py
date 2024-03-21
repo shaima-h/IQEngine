@@ -1,8 +1,11 @@
 import numpy as np
+import math
 import copy
 
 '''
 This is an exact copy of the WV1D.transform1D method in the Java repo.
+
+TODO:  add comments
 '''
 def transform1D(input_row, level):
     t = copy.deepcopy(input_row)
@@ -17,20 +20,40 @@ def transform1D(input_row, level):
     
     for i in range(0, endpoint, 2):
         avg = (input_row[i] + input_row[i + 1]) / 2
-        print("avg: " , avg, " after adding values ", input_row[i], input_row[i+1])
         diff = avg - input_row[i + 1]
         t[tIndex] = avg
         t[(int)(tIndex + endpoint / 2)] = diff
         tIndex += 1
     if endpoint != 2:
         level += 1
-        print("t at end: ", t)
         t = transform1D(t, level)
     return t
+        
+
+'''
+Find the values we need in the reconstruction process. Always keeps the first value
+(the whole-signal average), and then finds the detail coefficients for the given 
+scale.
+This is similar to the work done in CoefficientTree.jabva.getLevelIndices() and 
+MultiScale.java.getIndicesAList(), I think.
+Inputs:
+    t:  the complete wavelet transform
+    scale:  the scale to reconstruct at
+'''
+def get_values(t, scale):
+    output = np.zeros(len(t))
+    output[0] = t[0]
+    start_index = (int) (2**(scale)) # start index for coefficients to use
+    end_index = (int) (start_index + 2**(scale))  # end index for coefficients to use
+    for i in range(start_index, end_index):
+        output[i] = t[i]
+    return output
 
 
 '''
 This is an exact copy of the WV1D.reconstruct1D method in the Java repo.
+
+TODO: add comments
 '''
 def reconstruct1D(input):
     r = np.empty(len(input))
@@ -46,11 +69,13 @@ def reconstruct1D(input):
             detailCo = input[(int)(2**(k-1)) 
                              + (int)(math.floor((i * 2**(k-1)) / len(input)))]
             value += sign * detailCo
-        # print("value ", value)
-        r[i] = value
+            r[i] = value
     
     return r
 
+
+
+# _________________________ Ignore everything below here __________________________ #
 
 def wavelet_decomposition(input):
     '''
