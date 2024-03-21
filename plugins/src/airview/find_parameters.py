@@ -8,7 +8,7 @@ def findSumabsSumsqN_row(input, scale1, scale2):
     return:
     list[float]: sum of absolute values, sum of squares, and size.
     '''
-    sumabs_sumsq_n = [None, None, None]
+    sumabs_sumsq_n = [0.0, 0.0, 0.0]
     # get regions with constant power - multiscale transform
     # regions is list of lists
     regions = multi_scale.multiscale_detection_getDefaultRegions(input, scale1, scale2)
@@ -30,13 +30,14 @@ def findSumabsSumsqN(input, scale1, scale2):
     # sumabs_sumsq_n[0] = sum of absolute values
     # sumabs_sumsq_n[1] = sum of squares
     # sumabs_sumsq_n = size
-    sumabs_sumsq_n = [None, None, None]
+    sumabs_sumsq_n = [0.0, 0.0, 0.0]
     regions = []
     for i, row in enumerate(input): # iterate through rows
         loc_sumabs_sumsq_n, regions_row = findSumabsSumsqN_row(row, scale1, scale2) # compute the sum of absolute values, sum of squares, and size for each row
-        regions.append[regions_row]
-        for j, s in enumerate(sumabs_sumsq_n):
-            s += loc_sumabs_sumsq_n[j] # accumulate results
+        regions.append(regions_row)
+        # for j, s in enumerate(sumabs_sumsq_n):
+        for j in range(len(sumabs_sumsq_n)):
+            sumabs_sumsq_n[j] += loc_sumabs_sumsq_n[j] # accumulate results
     return sumabs_sumsq_n, regions
 
 def findAvgAdjDiffCoarse(input, scale1, scale2):

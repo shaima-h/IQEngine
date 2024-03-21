@@ -29,11 +29,11 @@ def sortRegions(regions, indexToSort):
     
     while not isSorted(sorted_regions, indexToSort):
         for i in range(1, len(sorted_regions)):
-            if sorted[i-1][indexToSort] + sorted_regions[i-1][indexToSort+1] < sorted_regions[i][indexToSort] + sorted_regions[i][indexToSort+1]:
+            if sorted_regions[i-1][indexToSort] + sorted_regions[i-1][indexToSort+1] < sorted_regions[i][indexToSort] + sorted_regions[i][indexToSort+1]:
                 tmp = sorted_regions[i-1]
                 sorted_regions.pop(i-1)
-                sorted_regions.insert(i-1, sorted[i-1])
-                sorted_regions.pop[i]
+                sorted_regions.insert(i-1, sorted_regions[i-1])
+                sorted_regions.pop(i)
                 sorted_regions.insert(i, tmp)
     
     return sorted_regions
@@ -73,7 +73,7 @@ def threshold(regions, input, alpha):
                 edges.append(regions[i])
     
     # now we have the filtered coarse representation. Need to get averages for each adjacent region
-    list = []
+    filtered_list = []
     for i in range(1, len(edges)):
         # start with the widest band (leftmost to right most)
         mean_sd = stats(input, edges[i-1][0], edges[i][1])
@@ -105,10 +105,10 @@ def threshold(regions, input, alpha):
             d = [edges[i-1][1], edges[i][0], max[0], max[1]]
 
         # add the max to the list
-        list.add(d)
+        filtered_list.append(d)
 
     #TODO do we need to write to output.csv?
-    return list
+    return filtered_list
 
 
 def coarseDetection(input, regions, scale1, scale2, alpha):
@@ -135,14 +135,13 @@ def findTransmittersMultiScale(input, regions, jaccard_threshold, scale, alpha, 
     # integer : list[edge[]]
     changes = {}
 
-    for i, row in enumerate(input):
+    for r, row in enumerate(input):
         curr_edges = None
-        #TODO make sure regions is correct
-        curr_edges = coarseDetection(row, regions[i], math.log2(len(row) - scale), math.log2(len(row) - (scale +1), alpha))
+        curr_edges = coarseDetection(row, regions[r], math.log2(len(row)) - scale, math.log2(len(row)) - (scale + 1), alpha)
 
         # add all of the changes to the map
-        changes[row] = curr_edges
-        transmitter.updateTransmitters(changes, transmitters, row, jaccard_threshold, max_gap_rows)
+        changes[r] = curr_edges
+        transmitter.updateTransmitters(changes, transmitters, r, jaccard_threshold, max_gap_rows)
 
     return transmitters
 
@@ -183,7 +182,7 @@ def getRegionMeans(regions, input):
     for region in regions:
         # get start and end column
         start = region[0]
-        print(region)
+        # print(region)
         end = region[1]
         # calculate mean
         mean = 0.0

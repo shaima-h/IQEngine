@@ -69,10 +69,6 @@ class Plugin:
         detected = findTransmitters(spectrogram, self.scale, self.beta, jaccard_threshold, max_gap_rows, fft_size)
 
         # When making a detector, for the return, make a list, then for each detected emission, add one of these dicts to the list:
-        # TODO
-        #new Transmitter(r, r, curr[0].col, curr[1].col)
-        #.col is a list columes we have identified a transmitter is at
-        #r is row index
         annotations = []
         # only one transmitter detected
         for transmitter in detected:
