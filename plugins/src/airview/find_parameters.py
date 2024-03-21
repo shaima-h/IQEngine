@@ -32,12 +32,11 @@ def findSumabsSumsqN(input, scale1, scale2):
     # sumabs_sumsq_n = size
     sumabs_sumsq_n = [None, None, None]
     regions = []
-    for row in enumerate(input): # iterate through rows
+    for i, row in enumerate(input): # iterate through rows
         loc_sumabs_sumsq_n, regions_row = findSumabsSumsqN_row(row, scale1, scale2) # compute the sum of absolute values, sum of squares, and size for each row
         regions.append[regions_row]
         for j, s in enumerate(sumabs_sumsq_n):
             s += loc_sumabs_sumsq_n[j] # accumulate results
-
     return sumabs_sumsq_n, regions
 
 def findAvgAdjDiffCoarse(input, scale1, scale2):

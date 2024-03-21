@@ -158,7 +158,7 @@ def multiscale_transform(input, scale1, scale2):
     returns:
 
     '''
-    t = wavelet_decomp.transform1D(input)
+    t = wavelet_decomp.transform1D(input, 0)
 
     relevant_values1 = wavelet_decomp.get_values(t, scale1)
     relevant_values2 = wavelet_decomp.get_values(t, scale2)
@@ -183,6 +183,7 @@ def getRegionMeans(regions, input):
     for region in regions:
         # get start and end column
         start = region[0]
+        print(region)
         end = region[1]
         # calculate mean
         mean = 0.0
@@ -230,16 +231,20 @@ def multiscale_detection_getDefaultRegions(input, scale1, scale2):
     previous_value = transformed[0]
     start = 0
     end = 0
-    for i, t in enumerate(transformed, start=1):
+    # for i, t in enumerate(transformed, start=1):
+    for i in range(1, len(transformed)):
         # if the value is remaining constant, increase the end index
-        if t == previous_value and i != len(transformed)-1:
+        if transformed[i] == previous_value and i != len(transformed)-1:
             end += 1
-        
-        # add the region
-        regions.append([start, end, 0.0, 0.0, previous_value])
-        end += 1
-        start = end
-        previous_value = t
+        else:
+            # if the value changed or we reached the end of the signal
+            if i == len(transformed) - 1:
+                end += 1 # increase end to the final entry
+            
+            # add the region
+            regions.append([start, end, 0.0, 0.0, previous_value])
+            end += 1
+            previous_value = transformed[i]
     
     # calculate the mean/variance of each region
     regions = getRegionMeans(regions, input)
