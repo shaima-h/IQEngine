@@ -70,7 +70,6 @@ class Plugin:
 
         # When making a detector, for the return, make a list, then for each detected emission, add one of these dicts to the list:
         annotations = []
-        # only one transmitter detected
         for transmitter in detected:
             start_row = transmitter.start_row
             start_col = transmitter.start_col
