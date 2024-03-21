@@ -106,7 +106,7 @@ def threshold(regions, input, alpha):
         # add the max to the list
         list.add(d)
 
-    #TODO write to output.csv
+    #TODO do we need to write to output.csv?
     return list
 
 
@@ -116,7 +116,6 @@ def coarseDetection(input, regions, scale1, scale2, alpha):
     # threshold the coarse signal
     filtered = threshold(regions, input, alpha)
 
-    # TODO index stuff? just have word or don't have at all idk
     # sort the regions (index 2 is by mean, index 0/1 for frequency bins,
     # 3 for standard deviation, 4 is coarse value)
     filtered = sortRegions(filtered, 2)
