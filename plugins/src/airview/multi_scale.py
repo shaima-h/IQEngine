@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import wavelet_decomp
+import transmitter
 
 def adjacentOrOverlapping(edges, start, end):
     '''
@@ -59,7 +60,7 @@ def stats(input, start, end):
     return [mean, sd]
 
 def threshold(regions, input, alpha):
-    edges = []
+    edges = [] # edge = [col, state]
     for i in range(1, len(regions)):
         # compare the value of the constant power in each region (array index 4)--> multiscale value
 		# if the absolute value of their difference is larger than the threshold (alpha)
@@ -111,7 +112,7 @@ def threshold(regions, input, alpha):
 
 
 def coarseDetection(input, regions, scale1, scale2, alpha):
-    edges = []
+    edges = [] # edge = [col, state]
     
     # threshold the coarse signal
     filtered = threshold(regions, input, alpha)
@@ -141,7 +142,7 @@ def findTransmittersMultiScale(input, regions, jaccard_threshold, scale, alpha, 
 
         # add all of the changes to the map
         changes[row] = curr_edges
-        #TODO updateTransmitters
+        transmitter.updateTransmitters(changes, transmitters, row, jaccard_threshold, max_gap_rows)
 
     return transmitters
 
@@ -164,7 +165,7 @@ def multiscale_transform(input, scale1, scale2):
     r1 = wavelet_decomp.reconstruct1D(relevant_values1)
     r2 = wavelet_decomp.reconstruct1D(relevant_values2)
 
-    if len(t) != len(r):
+    if len(r1) != len(r2):
         raise ValueError("Error: Cannot multiply vectors of unequal length.")
     
     # multiply element wise

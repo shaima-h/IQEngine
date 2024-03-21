@@ -75,17 +75,24 @@ class Plugin:
         #.col is a list columes we have identified a transmitter is at
         #r is row index
         annotations = []
-        for detection in detected:
-            #does each edge coincide with a certain column
-            edgeOne, edgeTwo, columnOne, columnTwo = detection
+        # only one transmitter detected
+        for transmitter in detected:
+            start_row = transmitter.start_row
+            start_col = transmitter.start_col
+            end_row = transmitter.end_row
+            end_col = transmitter.end_col
+
+            x = num_rows - end_row
+            y = start_col
+            width = end_col - start_col
+            height = end_row - start_row
+
             an = {}
-            #I copied a similar from simple detector since I am currently confused about the jobs of each core, looking into this tomorrow
-            #This should not give an accurate annotation
-            an['core:freq_lower_edge'] = int(edgeOne / fft_size * self.sample_rate - (self.sample_rate / 2) + self.center_freq) # Hz, was 1
-            an['core:freq_upper_edge'] = int((edgeOne + columnOne) / fft_size * self.sample_rate - (self.sample_rate / 2) + self.center_freq) # Hz, was 2
-            an['core:sample_start'] = int(edgeTwo * fft_size)#was 3
-            an['core:sample_count'] = int(columnTwo * fft_size)#was 4
-            an["core:label"] = "Unknown"#NOTE should we should set this to transmitters, since that is what AirView looks for?
+            an['core:freq_lower_edge'] = int(x / fft_size * self.sample_rate - (self.sample_rate / 2) + self.center_freq) # Hz
+            an['core:freq_upper_edge'] = int((x + width) / fft_size * self.sample_rate - (self.sample_rate / 2) + self.center_freq) # Hz
+            an['core:sample_start'] = int(y * fft_size)
+            an['core:sample_count'] = int(height * fft_size)
+            an["core:label"] = "Transmitter"# NOTE should we should set this to transmitters, since that is what AirView looks for?
             annotations.append(an)
 
         return {
