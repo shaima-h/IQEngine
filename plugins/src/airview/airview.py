@@ -1,16 +1,6 @@
 ''' TODO Notes
-- confirm: we are not using training data bc it is the same as input?
 - no filef and output_file (from FindTransmitters.java)
 - fix and make proper function descriptions/comments
-- MultiScaleDetection class? do we need classes if they just have methods and don't have any attributes in the java code?
-    - functions look so messy, how do we organize?
-    - multiple python files in airview folder? then import in this file? like:
-    airview/
-    ├── airview.py <- only has findTransmitters()
-    ├── MultiScale.py
-    ├── CoefficientTree.py
-    ├── FindParameters.py
-    └── ...
 - function names convention? underscores or camel case?
 '''
 
@@ -60,19 +50,24 @@ class Plugin:
         print(samples[0:10])
         print(self.sample_rate)
         print(self.center_freq)
-        print(self.param1)
-        print(self.param2)
-        print(self.param3)
-
-        # TODO max_gap_milliseconds? always 0 in java code
+        print(self.beta)
+        print(self.scale)
 
         # Your Plugin (and optionally, classification) code here
-        fft_size = samples.shape[1] # number of columns #TODO make sure it is power of 2?
+
+        # turn samples into 2d matrix from 1d array
+        fft_size = 1024
+        num_rows = int(np.floor(len(samples)/fft_size))
+        spectrogram = np.zeros((num_rows, fft_size))
+        for i in range(num_rows):
+            spectrogram[i,:] = 10*np.log10(np.abs(np.fft.fftshift(np.fft.fft(samples[i*fft_size:(i+1)*fft_size])))**2)
+
+        # print(spectrogram.shape)
         time_for_fft = fft_size * (1/sample_rate) *1000 # time it takes to traverse in ms
-        max_gap_rows = math.ceil(0.0/time_for_fft) #TODO
+        max_gap_rows = math.ceil(0.0/time_for_fft) # TODO max_gap_milliseconds? always 0 in java code
         jaccard_threshold = 0.5 # if they are at least halfway overlapping, considered aligned
 
-        detected = findTransmitters(samples, self.scale, self.beta, jaccard_threshold, max_gap_rows, fft_size)
+        detected = findTransmitters(spectrogram, self.scale, self.beta, jaccard_threshold, max_gap_rows, fft_size)
 
         # When making a detector, for the return, make a list, then for each detected emission, add one of these dicts to the list:
         # TODO

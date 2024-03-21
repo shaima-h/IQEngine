@@ -106,7 +106,7 @@ def threshold(regions, input, alpha):
         # add the max to the list
         list.add(d)
 
-    #TODO write to output.csv
+    #TODO do we need to write to output.csv?
     return list
 
 
@@ -116,7 +116,6 @@ def coarseDetection(input, regions, scale1, scale2, alpha):
     # threshold the coarse signal
     filtered = threshold(regions, input, alpha)
 
-    # TODO index stuff? just have word or don't have at all idk
     # sort the regions (index 2 is by mean, index 0/1 for frequency bins,
     # 3 for standard deviation, 4 is coarse value)
     filtered = sortRegions(filtered, 2)
@@ -158,14 +157,18 @@ def multiscale_transform(input, scale1, scale2):
     returns:
 
     '''
-    t = wavelet_decomp.wavelet_decomposition(input)
-    #r = wavelet_decomp.reconstruct1D(input)
+    t = wavelet_decomp.transform1D(input)
+
+    relevant_values1 = wavelet_decomp.get_values(t, scale1)
+    relevant_values2 = wavelet_decomp.get_values(t, scale2)
+    r1 = wavelet_decomp.reconstruct1D(relevant_values1)
+    r2 = wavelet_decomp.reconstruct1D(relevant_values2)
 
     if len(t) != len(r):
         raise ValueError("Error: Cannot multiply vectors of unequal length.")
     
     # multiply element wise
-    return np.multiply(t, r)
+    return np.multiply(r1, r2)
 
 
 def getRegionMeans(regions, input):
