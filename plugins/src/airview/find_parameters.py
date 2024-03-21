@@ -14,8 +14,8 @@ def findSumabsSumsqN_row(input, scale1, scale2):
     regions = multi_scale.multiscale_detection_getDefaultRegions(input, scale1, scale2)
 
     for i in range(1, len(regions)):
-        sumabs_sumsq_n[0] += abs(regions.get[i - 1][4] - regions.get[i][4])
-        sumabs_sumsq_n[1] += (regions.get[i - 1][4] - regions.get[i][4]) ** 2
+        sumabs_sumsq_n[0] += abs(regions[i - 1][4] - regions[i][4])
+        sumabs_sumsq_n[1] += (regions[i - 1][4] - regions[i][4]) ** 2
         sumabs_sumsq_n[2] += 1
     
     return sumabs_sumsq_n, regions

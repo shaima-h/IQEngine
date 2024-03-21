@@ -244,6 +244,7 @@ def multiscale_detection_getDefaultRegions(input, scale1, scale2):
             # add the region
             regions.append([start, end, 0.0, 0.0, previous_value])
             end += 1
+            start = end
             previous_value = transformed[i]
     
     # calculate the mean/variance of each region
