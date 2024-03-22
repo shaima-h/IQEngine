@@ -90,21 +90,7 @@ class Plugin:
             "data_output" : [],
             "annotations" : annotations
         }
-
-if __name__ == "__main__":
-    # Example of how to test your plugin locally
-    #NOTE fname changes dependent on user, as it is locally testing your plugins, set equal to where you are storing your file pairs(data & meta)
-    fname = "/Users/tarakirkhus/Downloads/synthetic"
-    with open(fname + '.sigmf-meta', 'r') as f:
-        meta_data = json.load(f)
-    sample_rate = meta_data["global"]["core:sample_rate"]
-    center_freq = meta_data["captures"][0]['core:frequency']
-    samples = np.fromfile(fname + '.sigmf-data', dtype=np.complex64)
-    params = {'sample_rate': sample_rate, 'center_freq': center_freq, 'param1': 1, 'param2': 'test2', 'param3': 5.67}
-    plugin = Plugin(**params)
-    annotations = plugin.run(samples)
-    print(annotations)
-
+    
 
 #____________________ beginning of multi_scale.py _________________
 
@@ -602,3 +588,19 @@ class Transmitter:
 
     def set_row_fall(self, end_row):
         self.end_row = end_row
+
+
+if __name__ == "__main__":
+    # Example of how to test your plugin locally
+    #NOTE fname changes dependent on user, as it is locally testing your plugins, set equal to where you are storing your file pairs(data & meta)
+    fname = "/Users/shaimahussaini/classes/icsi499/file_pairs/synthetic"
+    with open(fname + '.sigmf-meta', 'r') as f:
+        meta_data = json.load(f)
+    sample_rate = meta_data["global"]["core:sample_rate"]
+    center_freq = meta_data["captures"][0]['core:frequency']
+    samples = np.fromfile(fname + '.sigmf-data', dtype=np.complex64)
+    params = {'sample_rate': sample_rate, 'center_freq': center_freq, 'param1': 1, 'param2': 'test2', 'param3': 5.67}
+    plugin = Plugin(**params)
+    annotations = plugin.run(samples)
+    print(annotations)
+    
