@@ -64,14 +64,19 @@ class Plugin:
         max_gap_rows = math.ceil(0.0/time_for_fft) # TODO max_gap_milliseconds? always 0 in java code
         jaccard_threshold = 0.5 # if they are at least halfway overlapping, considered aligned
         detected = findTransmitters(spectrogram, self.scale, self.beta, jaccard_threshold, max_gap_rows, fft_size)
-
+        
         # When making a detector, for the return, make a list, then for each detected emission, add one of these dicts to the list:
         annotations = []
         for transmitter in detected:
+            print('*** detected: ', transmitter)
+
             start_row = transmitter.start_row
             start_col = transmitter.start_col
             end_row = transmitter.end_row
             end_col = transmitter.end_col
+
+            print('*** what java would output:')
+            print(f"{transmitter.start_col},{num_rows - transmitter.end_row},{transmitter.end_col - transmitter.start_col},{transmitter.end_row-transmitter.start_row}\n")
 
             x = num_rows - end_row
             y = start_col
@@ -588,19 +593,22 @@ class Transmitter:
 
     def set_row_fall(self, end_row):
         self.end_row = end_row
+    
+    def __str__(self):
+        return f"Transmitter(start_row={self.start_row}, start_col={self.start_col}, " \
+               f"end_row={self.end_row}, end_col={self.end_col})"
 
 
 if __name__ == "__main__":
     # Example of how to test your plugin locally
-    #NOTE fname changes dependent on user, as it is locally testing your plugins, set equal to where you are storing your file pairs(data & meta)
+    #set fname to where you are storing your file pairs (data & meta)
     fname = "/Users/shaimahussaini/classes/icsi499/file_pairs/synthetic"
     with open(fname + '.sigmf-meta', 'r') as f:
         meta_data = json.load(f)
     sample_rate = meta_data["global"]["core:sample_rate"]
     center_freq = meta_data["captures"][0]['core:frequency']
     samples = np.fromfile(fname + '.sigmf-data', dtype=np.complex64)
-    params = {'sample_rate': sample_rate, 'center_freq': center_freq, 'param1': 1, 'param2': 'test2', 'param3': 5.67}
+    params = {'sample_rate': sample_rate, 'center_freq': center_freq}
     plugin = Plugin(**params)
     annotations = plugin.run(samples)
     print(annotations)
-    
