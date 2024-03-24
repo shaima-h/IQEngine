@@ -78,18 +78,22 @@ class Plugin:
             print('*** what java would output:')
             print(f"{transmitter.start_col},{num_rows - transmitter.end_row},{transmitter.end_col - transmitter.start_col},{transmitter.end_row-transmitter.start_row}\n")
 
-            x = num_rows - end_row
-            y = start_col
+            print('*** what java would output:')
+            print(f"{transmitter.start_col},{num_rows - transmitter.end_row},{transmitter.end_col - transmitter.start_col},{transmitter.end_row-transmitter.start_row}\n")
+
+            x = start_col
+            y = start_row
             width = end_col - start_col
             height = end_row - start_row
-
-            an = {}
-            an['core:freq_lower_edge'] = int(x / fft_size * self.sample_rate - (self.sample_rate / 2) + self.center_freq) # Hz
-            an['core:freq_upper_edge'] = int((x + width) / fft_size * self.sample_rate - (self.sample_rate / 2) + self.center_freq) # Hz
-            an['core:sample_start'] = int(y * fft_size)
-            an['core:sample_count'] = int(height * fft_size)
-            an["core:label"] = "Transmitter"# NOTE should we should set this to transmitters, since that is what AirView looks for?
-            annotations.append(an)
+            
+            if height > 0:
+                an = {}
+                an['core:freq_lower_edge'] = int(x / fft_size * self.sample_rate - (self.sample_rate / 2) + self.center_freq) # Hz
+                an['core:freq_upper_edge'] = int((x + width) / fft_size * self.sample_rate - (self.sample_rate / 2) + self.center_freq) # Hz
+                an['core:sample_start'] = int(y * fft_size)
+                an['core:sample_count'] = int(height * fft_size)
+                an["core:label"] = "Transmitter"# NOTE should we should set this to transmitters, since that is what AirView looks for?
+                annotations.append(an)
 
         return {
             "data_output" : [],
@@ -539,7 +543,7 @@ def updateTransmitters(changes, t, r, jaccard_threshold, max_gap):
             found = False
             # loop through transmitters, starting with most recent (to catch active transmitters)
             # for i, tx in reversed(list(enumerate(t))):
-            for i in range(len(t) - 1, -1):
+            for i in range(len(t)-1, -1, -1):
                 tx = t[i]
                 # if the transmitter + edges match within jaccard threshold
                 if jaccard_value(tx, curr) >= jaccard_threshold:
@@ -557,30 +561,31 @@ def updateTransmitters(changes, t, r, jaccard_threshold, max_gap):
                             tx.found = True
                         else:
                             # if it's been inactive for too long, create a new transmitter
-                            t.append[Transmitter(r, r, curr[0][0], curr[1][0])]
+                            t.append(Transmitter(r, r, curr[0][0], curr[1][0]))
                             t[len(t)-1].found = True
                             t[len(t)-1].active_switch()
                     break # no need to look at any more transmitters
 
-                # if the edges weren't found in any previous transmitters
-                if not found:
-                    # make a new transmitter with current row as start and end
-                    t.append(Transmitter(r, r, curr[0][0], curr[1][0]))
-                    t[len(t)-1].active_switch() # list this transmitter as active
-                    t[len(t)-1].found = True # set it to found so we don't deactivate it immediately below
+            # if the edges weren't found in any previous transmitters
+            if not found:
+                # make a new transmitter with current row as start and end
+                t.append(Transmitter(r, r, curr[0][0], curr[1][0]))
+                t[len(t)-1].active_switch() # list this transmitter as active
+                t[len(t)-1].found = True # set it to found so we don't deactivate it immediately below
 
-            # loop through the transmitters again
-            for tx in t:
-                # only look at currently active transmitters that were not found
-                if tx.active and not tx.found: # transmitter is no longer active
-                    tx.found = False # reset found to false
+        # loop through the transmitters again
+        for tx in t:
+            # only look at currently active transmitters that were not found
+            if tx.active and not tx.found: # transmitter is no longer active
+                tx.active = False
+            tx.found = False # reset found to false
 
 
 class Transmitter:
-    def __init__(self, start_row, start_col, end_row, end_col, mean=None, sd=None, found=False, active=False, priors=None):
+    def __init__(self, start_row, end_row, start_col, end_col, mean=None, sd=None, found=False, active=False, priors=None):
         self.start_row = start_row
-        self.start_col = start_col
         self.end_row = end_row
+        self.start_col = start_col
         self.end_col = end_col
         self.mean = mean
         self.sd = sd
