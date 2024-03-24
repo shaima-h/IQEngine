@@ -78,9 +78,6 @@ class Plugin:
             print('*** what java would output:')
             print(f"{transmitter.start_col},{num_rows - transmitter.end_row},{transmitter.end_col - transmitter.start_col},{transmitter.end_row-transmitter.start_row}\n")
 
-            print('*** what java would output:')
-            print(f"{transmitter.start_col},{num_rows - transmitter.end_row},{transmitter.end_col - transmitter.start_col},{transmitter.end_row-transmitter.start_row}\n")
-
             x = start_col
             y = start_row
             width = end_col - start_col
