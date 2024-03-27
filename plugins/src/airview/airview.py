@@ -24,7 +24,12 @@ def findTransmitters(input, scale, beta, jaccard_threshold, max_gap_rows, fft_si
     # beta is a threshold-scaling parameter that determines how many standard deviations from the mean should pairwise differences be in order to be ranked as a outlier local maxima
     params, regions = findAvgAdjDiffCoarse(input, math.log2(input.shape[0]) - scale,
 				math.log2(input.shape[0]) - (scale + 1))
-    
+    # num_rows = len(regions)
+    # num_columns = len(regions[0])  # Assuming all inner lists have the same length
+    # num_items = len(regions[0][0])
+    # print("Dimensions:", (num_rows, num_columns, num_items))
+    # print(regions[0])
+
     threshold = params[0] + params[1]*beta # threshold = mean + stdev*beta
     
     detected = findTransmittersMultiScale(input, regions, jaccard_threshold, scale, threshold, max_gap_rows)
@@ -63,25 +68,26 @@ class Plugin:
         max_gap_rows = math.ceil(0.0/time_for_fft) # TODO max_gap_milliseconds? always 0 in java code
         jaccard_threshold = 0.5 # if they are at least halfway overlapping, considered aligned
 
-        if self.run_parameter_optimization[0] == 'y':
+        if self.run_parameter_optimization[0].lower() == 'y':
             print('finding optimal paramters')
             detected = [] # no annotations bc just setting beta/scale
-            beta, scale = findOptimalParams(spectrogram)
+            beta_scale = findOptimalParams(spectrogram)
+            print(f"Optimal Beta and Scale: beta: {beta_scale[0]}, scale: {beta_scale[1]}")
         else:
             detected = findTransmitters(spectrogram, self.scale, self.beta, jaccard_threshold, max_gap_rows, fft_size)
         
         # When making a detector, for the return, make a list, then for each detected emission, add one of these dicts to the list:
         annotations = []
         for transmitter in detected:
-            print('*** detected: ', transmitter)
+            # print('*** detected: ', transmitter)
 
             start_row = transmitter.start_row
             start_col = transmitter.start_col
             end_row = transmitter.end_row
             end_col = transmitter.end_col
 
-            print('*** what java would output:')
-            print(f"{transmitter.start_col},{num_rows - transmitter.end_row},{transmitter.end_col - transmitter.start_col},{transmitter.end_row-transmitter.start_row}\n")
+            # print('*** what java would output:')
+            # print(f"{transmitter.start_col},{num_rows - transmitter.end_row},{transmitter.end_col - transmitter.start_col},{transmitter.end_row-transmitter.start_row}\n")
 
             x = start_col
             y = start_row
@@ -168,6 +174,7 @@ def stats(input, start, end):
 
 def threshold(regions, input, alpha):
     edges = [] # edge = [col, state]
+    # print(len(regions))
     for i in range(1, len(regions)):
         # compare the value of the constant power in each region (array index 4)--> multiscale value
 		# if the absolute value of their difference is larger than the threshold (alpha)
@@ -218,7 +225,7 @@ def threshold(regions, input, alpha):
     return filtered_list
 
 
-def coarseDetection(input, regions, scale1, scale2, alpha):
+def coarseDetection(input, regions, alpha):
     edges = [] # edge = [col, state]
     
     # threshold the coarse signal
@@ -244,7 +251,7 @@ def findTransmittersMultiScale(input, regions, jaccard_threshold, scale, alpha, 
 
     for r, row in enumerate(input):
         curr_edges = None
-        curr_edges = coarseDetection(row, regions[r], math.log2(len(row)) - scale, math.log2(len(row)) - (scale + 1), alpha)
+        curr_edges = coarseDetection(row, regions[r], alpha)
 
         # add all of the changes to the map
         changes[r] = curr_edges
@@ -373,7 +380,6 @@ def findSumabsSumsqN_row(input, scale1, scale2):
     # get regions with constant power - multiscale transform
     # regions is list of lists
     regions = multiscale_detection_getDefaultRegions(input, scale1, scale2)
-
 
     for i in range(1, len(regions)):
         sumabs_sumsq_n[0] += abs(regions[i - 1][4] - regions[i][4])
@@ -608,19 +614,20 @@ class Transmitter:
 
 def jaccard_edges(tx1, tx2):
     a = [[tx1.start_col, 'r'], [tx1.end_col, 'f']]
-    b = [[tx2.start_col, 'r', [tx2.end_col, 'f']]]
+    b = [[tx2.start_col, 'r'], [tx2.end_col, 'f']]
 
     jaccard = 0.0
     intersection = colIntersection(Transmitter(1, 1, a[0][0], a[1][0]),
-                                   Transmitter[1, 1, b[0][0], b[1][0]])
+                                   Transmitter(1, 1, b[0][0], b[1][0]))
     union = (a[1][0] - a[0][0]) + (b[1][0] - b[0][0])
-    jaccard = intersection / (union - intersection)
+    # print(a)
+    # print(b)
+    jaccard = intersection / (union - intersection + 0.000000001) # TODO sometimes union and intersection are same, so dividing by zero
     return jaccard
 
 
 def avgJS(d1, d2):
     if len(d1) > 0:
-        inters = 0.0
         js = 0.0
         # need to find the max jaccard for every detected transmitter
         jss = [0.0] * len(d1)
@@ -649,7 +656,7 @@ def avgJS(d1, d2):
 def getTxsEdges(edges, row):
     txs = []
     for e in edges:
-        txs.add(Transmitter[row, row, e[0][0], e[1][0]])
+        txs.append(Transmitter(row, row, e[0][0], e[1][0]))
     return txs
 
 
@@ -662,6 +669,7 @@ def learnBeta(scale, input, bs, rows):
     # create a 2d array to hold alignment data
     # [0] contains alignment, [1] contains relevant beta
     tpsms = [[0.0, 0.0] for _ in range(len(bs))]
+    loc_params, regions = findAvgAdjDiffCoarse(input, s1, s2)
 
     for i in range(len(bs)):
         # collect beta from beta array
@@ -672,31 +680,32 @@ def learnBeta(scale, input, bs, rows):
         ptr1 = 0
         ptr2 = 0
         m = 0
+        r = 0 # for regions, r=row in input
         detected = []
         while True:
             detected_n = []
             while ptr1 < rows and m == 0:
                 # current
                 # collect transformed array using default regions and threshold
-                params, regions = findAvgAdjDiffCoarse(input, s1, s2)
-                curr_edges = coarseDetection(input[ptr1], regions, s1, s2, params[0] + (params[1]*b))
+                curr_edges = coarseDetection(input[ptr1], regions[r], loc_params[0] + (loc_params[1]*b))
                 # collect transmissions that passed threshold
                 detected = getTxsEdges(curr_edges, ptr1)
                 if len(detected) > 0:
                     break
                 ptr1 += 1
+                r += 1 # TODO make sure right spot?
             
             ptr2 = ptr1 + 1
             while ptr2 < rows:
                 # next
                 # collect transformed array using default regions and threshold
-                params, regions = findAvgAdjDiffCoarse(input, s1, s2)
-                curr_edges = coarseDetection(input[ptr2], regions, s1, s2, params[0] + (params[1]*b))
+                curr_edges = coarseDetection(input[ptr2], regions[r], loc_params[0] + (loc_params[1]*b))
                 # collect transmissions that passed threshold
                 detected_n = getTxsEdges(curr_edges, ptr2)
                 if len(detected_n) > 0:
                     break
                 ptr2 += 1
+                r += 1 # TODO make sure right spot?
 
             count += 1
             # calculate average jaccard of adjacent transmissions
@@ -730,7 +739,7 @@ def findOptimalParams(spectogram): # TODO df
     input = copy.deepcopy(spectogram)
 
     # set array of scales
-    scales = [0.0] * maxS - minS + 1 # make sure each is not same reference or smthing
+    scales = [0.0] * (maxS - minS + 1) # make sure each is not same reference or smthing
     for i in range(len(scales)):
         scales[i] = i + minS
 
@@ -745,7 +754,7 @@ def findOptimalParams(spectogram): # TODO df
     # holds result of best alignment and scale
     res = [0.0, 0.0]
     for i in range(len(scales)):
-        tpsm = learnBeta(scales[i], input, bs, input.data.length)
+        tpsm = learnBeta(scales[i], input, bs, input.shape[0])
 
         for j in range(len(tpsm)):
             if tpsm[j][0] > bestSim:
@@ -765,7 +774,7 @@ if __name__ == "__main__":
     sample_rate = meta_data["global"]["core:sample_rate"]
     center_freq = meta_data["captures"][0]['core:frequency']
     samples = np.fromfile(fname + '.sigmf-data', dtype=np.complex64)
-    params = {'sample_rate': sample_rate, 'center_freq': center_freq}
+    params = {'sample_rate': sample_rate, 'center_freq': center_freq, 'run_parameter_optimization': 'y'}
     plugin = Plugin(**params)
     annotations = plugin.run(samples)
     # print(annotations)
