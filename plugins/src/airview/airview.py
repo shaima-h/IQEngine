@@ -622,7 +622,8 @@ def jaccard_edges(tx1, tx2):
     union = (a[1][0] - a[0][0]) + (b[1][0] - b[0][0])
     # print(a)
     # print(b)
-    jaccard = intersection / (union - intersection + 0.000000001) # TODO sometimes union and intersection are same, so dividing by zero
+    epsilon = 1e-12
+    jaccard = intersection / (union - intersection + epsilon) # TODO sometimes union and intersection are same, so dividing by zero
     return jaccard
 
 
@@ -680,32 +681,29 @@ def learnBeta(scale, input, bs, rows):
         ptr1 = 0
         ptr2 = 0
         m = 0
-        r = 0 # for regions, r=row in input
         detected = []
         while True:
             detected_n = []
             while ptr1 < rows and m == 0:
                 # current
                 # collect transformed array using default regions and threshold
-                curr_edges = coarseDetection(input[ptr1], regions[r], loc_params[0] + (loc_params[1]*b))
+                curr_edges = coarseDetection(input[ptr1], regions[ptr1], loc_params[0] + (loc_params[1]*b))
                 # collect transmissions that passed threshold
                 detected = getTxsEdges(curr_edges, ptr1)
                 if len(detected) > 0:
                     break
                 ptr1 += 1
-                r += 1 # TODO make sure right spot?
             
             ptr2 = ptr1 + 1
             while ptr2 < rows:
                 # next
                 # collect transformed array using default regions and threshold
-                curr_edges = coarseDetection(input[ptr2], regions[r], loc_params[0] + (loc_params[1]*b))
+                curr_edges = coarseDetection(input[ptr2], regions[ptr2], loc_params[0] + (loc_params[1]*b))
                 # collect transmissions that passed threshold
                 detected_n = getTxsEdges(curr_edges, ptr2)
                 if len(detected_n) > 0:
                     break
                 ptr2 += 1
-                r += 1 # TODO make sure right spot?
 
             count += 1
             # calculate average jaccard of adjacent transmissions
@@ -758,7 +756,6 @@ def findOptimalParams(spectogram): # TODO df
 
         for j in range(len(tpsm)):
             if tpsm[j][0] > bestSim:
-                secondBestSim = bestSim # TODO do we need this
                 bestSim = tpsm[j][0]
                 res[0] = bs[j]
                 res[1] = scales[i]
