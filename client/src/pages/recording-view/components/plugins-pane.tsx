@@ -281,7 +281,7 @@ export const PluginsPane = () => {
         if (data.airview_beta_scale) {
           let beta = data.airview_beta_scale[0];
           let scale = data.airview_beta_scale[1];
-          const toastId = toast.success(`Optimal beta and scale values: beta: ${beta}, scale: ${scale}`, { duration: 10000 });
+          const toastId = toast.success(`Optimal beta and scale values: beta: ${beta}, scale: ${scale}`, { duration: 15000 });
         }
 
         if (data.annotations) {
