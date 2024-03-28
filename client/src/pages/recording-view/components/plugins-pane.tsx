@@ -277,11 +277,11 @@ export const PluginsPane = () => {
           }
         }
 
+        // output beta and scale from airview parameter optimization as a popup (no annotations returned)
         if (data.airview_beta_scale) {
-          let beta = data.airview_beta_scale[0]; // Get beta value from airview parameter optimization results
-          let scale = data.airview_beta_scale[1]; // Get scale value from airview parameter optimization results
+          let beta = data.airview_beta_scale[0];
+          let scale = data.airview_beta_scale[1];
           const toastId = toast.success(`Optimal beta and scale values: beta: ${beta}, scale: ${scale}`, { duration: 10000 });
-          // toast.remove(toastId);
         }
 
         if (data.annotations) {

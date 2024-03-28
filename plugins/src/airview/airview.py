@@ -135,7 +135,6 @@ def adjacentOrOverlapping(edges, start, end):
             return True
     return False
 
-#TODO make sorting more efficient??
 def isSorted(regions, indexToSort):
     for i in range(1, len(regions)):
         if regions[i-1][indexToSort] + regions[i-1][indexToSort+1] < regions[i][indexToSort] + regions[i][indexToSort+1]:
@@ -226,7 +225,6 @@ def threshold(regions, input, alpha):
         # add the max to the list
         filtered_list.append(d)
 
-    #TODO do we need to write to output.csv?
     return filtered_list
 
 
@@ -764,7 +762,7 @@ def findOptimalParams(spectogram):
                 bestSim = tpsm[j][0]
                 res[0] = bs[j]
                 res[1] = scales[i]
-    return res # TODO return in annotations
+    return res
 
 
 if __name__ == "__main__":
