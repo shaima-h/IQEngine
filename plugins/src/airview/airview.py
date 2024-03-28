@@ -22,8 +22,8 @@ def findTransmitters(input, scale, beta, jaccard_threshold, max_gap_rows, fft_si
     # params[0] = mean of the pairwise difference of multiscale products
     # params[1] = std of the pairwise differences of multiscale products
     # beta is a threshold-scaling parameter that determines how many standard deviations from the mean should pairwise differences be in order to be ranked as a outlier local maxima
-    params, regions = findAvgAdjDiffCoarse(input, math.log2(input.shape[0]) - scale,
-				math.log2(input.shape[0]) - (scale + 1))
+    params, regions = findAvgAdjDiffCoarse(input, math.log2(input.shape[1]) - scale,
+				math.log2(input.shape[1]) - (scale + 1))
     # num_rows = len(regions)
     # num_columns = len(regions[0])  # Assuming all inner lists have the same length
     # num_items = len(regions[0][0])
@@ -666,9 +666,9 @@ def getTxsEdges(edges, row):
 
 def learnBeta(scale, input, bs, rows):
     # get scale 1
-    s1 = math.log2(input.shape[0]) - scale
+    s1 = math.log2(input.shape[1]) - scale
     # get scale 2
-    s2 = math.log2(input.shape[0]) - (scale + 1)
+    s2 = math.log2(input.shape[1]) - (scale + 1)
 
     # create a 2d array to hold alignment data
     # [0] contains alignment, [1] contains relevant beta
@@ -762,13 +762,14 @@ def findOptimalParams(spectogram):
                 bestSim = tpsm[j][0]
                 res[0] = bs[j]
                 res[1] = scales[i]
+    res[0] = round(res[0], 1) # round to nearest 10th
     return res
 
 
 if __name__ == "__main__":
     # Example of how to test your plugin locally
     #set fname to where you are storing your file pairs (data & meta)
-    fname = "/Users/shaimahussaini/classes/icsi499/file_pairs/synthetic"
+    fname = "/Users/shaimahussaini/classes/icsi499/file_pairs/karyns_sample"
     with open(fname + '.sigmf-meta', 'r') as f:
         meta_data = json.load(f)
     sample_rate = meta_data["global"]["core:sample_rate"]
