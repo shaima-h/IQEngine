@@ -277,6 +277,13 @@ export const PluginsPane = () => {
           }
         }
 
+        if (data.airview_beta_scale) {
+          let beta = data.airview_beta_scale[0]; // Get beta value from airview parameter optimization results
+          let scale = data.airview_beta_scale[1]; // Get scale value from airview parameter optimization results
+          const toastId = toast.success(`Optimal beta and scale values: beta: ${beta}, scale: ${scale}`, { duration: 10000 });
+          // toast.remove(toastId);
+        }
+
         if (data.annotations) {
           for (let i = 0; i < data.annotations.length; i++) {
             data.annotations[i]['core:sample_start'] += cursorTime.start;

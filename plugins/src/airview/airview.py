@@ -70,43 +70,48 @@ class Plugin:
 
         if self.run_parameter_optimization[0].lower() == 'y':
             print('finding optimal paramters')
-            detected = [] # no annotations bc just setting beta/scale
-            beta_scale = findOptimalParams(spectrogram)
-            print(f"Optimal Beta and Scale: beta: {beta_scale[0]}, scale: {beta_scale[1]}")
+            airview_beta_scale = findOptimalParams(spectrogram)
+            print(f"Optimal Beta and Scale: beta: {airview_beta_scale[0]}, scale: {airview_beta_scale[1]}")
         else:
             detected = findTransmitters(spectrogram, self.scale, self.beta, jaccard_threshold, max_gap_rows, fft_size)
         
-        # When making a detector, for the return, make a list, then for each detected emission, add one of these dicts to the list:
-        annotations = []
-        for transmitter in detected:
-            # print('*** detected: ', transmitter)
+            # When making a detector, for the return, make a list, then for each detected emission, add one of these dicts to the list:
+            annotations = []
+            for transmitter in detected:
+                # print('*** detected: ', transmitter)
 
-            start_row = transmitter.start_row
-            start_col = transmitter.start_col
-            end_row = transmitter.end_row
-            end_col = transmitter.end_col
+                start_row = transmitter.start_row
+                start_col = transmitter.start_col
+                end_row = transmitter.end_row
+                end_col = transmitter.end_col
 
-            # print('*** what java would output:')
-            # print(f"{transmitter.start_col},{num_rows - transmitter.end_row},{transmitter.end_col - transmitter.start_col},{transmitter.end_row-transmitter.start_row}\n")
+                # print('*** what java would output:')
+                # print(f"{transmitter.start_col},{num_rows - transmitter.end_row},{transmitter.end_col - transmitter.start_col},{transmitter.end_row-transmitter.start_row}\n")
 
-            x = start_col
-            y = start_row
-            width = end_col - start_col
-            height = end_row - start_row
-            
-            if height > 0:
-                an = {}
-                an['core:freq_lower_edge'] = int(x / fft_size * self.sample_rate - (self.sample_rate / 2) + self.center_freq) # Hz
-                an['core:freq_upper_edge'] = int((x + width) / fft_size * self.sample_rate - (self.sample_rate / 2) + self.center_freq) # Hz
-                an['core:sample_start'] = int(y * fft_size)
-                an['core:sample_count'] = int(height * fft_size)
-                an["core:label"] = "Transmitter"# NOTE should we should set this to transmitters, since that is what AirView looks for?
-                annotations.append(an)
-
-        return {
-            "data_output" : [],
-            "annotations" : annotations
-        }
+                x = start_col
+                y = start_row
+                width = end_col - start_col
+                height = end_row - start_row
+                
+                if height > 0:
+                    an = {}
+                    an['core:freq_lower_edge'] = int(x / fft_size * self.sample_rate - (self.sample_rate / 2) + self.center_freq) # Hz
+                    an['core:freq_upper_edge'] = int((x + width) / fft_size * self.sample_rate - (self.sample_rate / 2) + self.center_freq) # Hz
+                    an['core:sample_start'] = int(y * fft_size)
+                    an['core:sample_count'] = int(height * fft_size)
+                    an["core:label"] = "Transmitter"# NOTE should we should set this to transmitters, since that is what AirView looks for?
+                    annotations.append(an)
+        
+        if self.run_parameter_optimization[0].lower() == 'y':
+            return {
+                "data_output" : [],
+                "airview_beta_scale" : airview_beta_scale
+            }
+        else:
+            return {
+                "data_output" : [],
+                "annotations" : annotations
+            }
     
 
 #____________________ beginning of multi_scale.py _________________
@@ -728,7 +733,7 @@ def learnBeta(scale, input, bs, rows):
     return tpsms
 
 
-def findOptimalParams(spectogram): # TODO df
+def findOptimalParams(spectogram):
     minS=1 # min scale
     maxS=6 # max scale
     startB=1 # start beta
@@ -759,7 +764,7 @@ def findOptimalParams(spectogram): # TODO df
                 bestSim = tpsm[j][0]
                 res[0] = bs[j]
                 res[1] = scales[i]
-    return res
+    return res # TODO return in annotations
 
 
 if __name__ == "__main__":
