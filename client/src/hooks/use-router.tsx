@@ -154,6 +154,16 @@ export function useRouter() {
             return { Component: RecordingViewPage };
           },
         },
+        //______________________________________________________________________________________________________________________
+        // NEW STUFF HERE___________________________________________________________
+        {
+          path: 'multiview/:type/:account/:container/:sasToken?',
+          async lazy() {
+            let { RecordingViewMultiplePage } = await import('@/pages/recording-view-multiple/recording-view-multiple');
+            return { Component: RecordingViewMultiplePage };
+          },
+        },
+        //___________________________________________________________
       ],
     },
     {
