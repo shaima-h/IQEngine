@@ -1,9 +1,3 @@
-''' TODO Notes
-- no filef and output_file (from FindTransmitters.java)
-- fix and make proper function descriptions/comments
-- function names convention? underscores or camel case?
-'''
-
 # Copyright (c) 2023 Marc Lichtman.
 # Licensed under the MIT License.
 
@@ -11,6 +5,7 @@ import numpy as np
 import json
 from pydantic.dataclasses import dataclass
 import math
+import copy
 
 def findTransmitters(input, scale, beta, jaccard_threshold, max_gap_rows, fft_size):
     '''
@@ -65,7 +60,7 @@ class Plugin:
 
         # print(spectrogram.shape)
         time_for_fft = fft_size * (1/self.sample_rate) *1000 # time it takes to traverse in ms
-        max_gap_rows = math.ceil(0.0/time_for_fft) # TODO max_gap_milliseconds? always 0 in java code
+        max_gap_rows = math.ceil(0.0/time_for_fft)
         jaccard_threshold = 0.5 # if they are at least halfway overlapping, considered aligned
 
         if self.run_parameter_optimization[0].lower() == 'y':
@@ -114,12 +109,7 @@ class Plugin:
             }
     
 
-#____________________ beginning of multi_scale.py _________________
-
-# import numpy as np
-# import math
-# import wavelet_decomp
-# import transmitter
+# MULTISCALE FUNCTIONS
 
 def adjacentOrOverlapping(edges, start, end):
     '''
@@ -229,6 +219,11 @@ def threshold(regions, input, alpha):
 
 
 def coarseDetection(input, regions, alpha):
+    '''
+    Detects transmissions using the coarse representation of the multiscale
+	transform. Collapses the signal, filters region permutations based on
+	threshold, then sorts based on highest mean power in the input signal.
+    '''
     edges = [] # edge = [col, state]
     
     # threshold the coarse signal
@@ -270,9 +265,6 @@ def multiscale_transform(input, scale1, scale2):
 	each input level and reconstructs the signal twice, once using each set
 	of indices. Finally, the element-wise product is taken between the two
 	reconstructions and this is the multiscale transform.
-
-    returns:
-
     '''
     t = transform1D(input, 0)
 
@@ -291,9 +283,6 @@ def multiscale_transform(input, scale1, scale2):
 def getRegionMeans(regions, input):
     '''
     Get mean in input for each region (bins with same values)
-    
-    return:
-
     '''
     # for each region
     for region in regions:
@@ -304,7 +293,6 @@ def getRegionMeans(regions, input):
         # calculate mean
         mean = 0.0
         for j in range(start, end+1):
-            # TODO: line 845 in MultiScaleDetection.java '= +', doesn't actually accumulate, but results same if I change it to += or keep it as = +, is this function even used??
             mean += input[j]
 
         if end - start != 0:
@@ -329,9 +317,6 @@ def multiscale_detection_getDefaultRegions(input, scale1, scale2):
     '''
     Get the "default" regions, meaning only the regions of constant power
 	without any filtering or thresholding.
-
-    return:
-    list[float]: DESC HERE
     '''
     '''
     Multiscale transform. Takes an input vector and two scales. Transforms
@@ -368,16 +353,11 @@ def multiscale_detection_getDefaultRegions(input, scale1, scale2):
     return regions
 
 
-# _____________________ beginning of find_parameters.py ___________________
-# import multi_scale
-# import math
+# FIND PARAMETER FUNCTIONS
 
 def findSumabsSumsqN_row(input, scale1, scale2):
     '''
     Calculates the sum of absolute values, sum of squares, and the size of one region.
-    
-    return:
-    list[float]: sum of absolute values, sum of squares, and size.
     '''
     sumabs_sumsq_n = [0.0, 0.0, 0.0]
     # get regions with constant power - multiscale transform
@@ -394,9 +374,6 @@ def findSumabsSumsqN_row(input, scale1, scale2):
 def findSumabsSumsqN(input, scale1, scale2):
     '''
     Calculates the sum of absolute values, sum of squares, and size
-    
-    return:
-    list[float]: sum of absolute values, sum of squares, and size
     '''
     # sumabs_sumsq_n[0] = sum of absolute values
     # sumabs_sumsq_n[1] = sum of squares
@@ -414,11 +391,8 @@ def findSumabsSumsqN(input, scale1, scale2):
 def findAvgAdjDiffCoarse(input, scale1, scale2):
     '''
     Finds the average/standard deviation of adjacent differences in coarse
-	signals NOTE: This method just uses the "default" regions (those defined
-	by the resolution) to construct the coarse signal
-	
-	return:
-    list[float]: mean and standard deviation of data
+	signals. This method just uses the "default" regions (those defined
+	by the resolution) to construct the coarse signal.
     '''
     mean_stdev = [None, None]
     sumabs_sumsq_n, regions = findSumabsSumsqN(input, scale1, scale2)
@@ -427,17 +401,12 @@ def findAvgAdjDiffCoarse(input, scale1, scale2):
     return mean_stdev, regions
 
 
-# _________________ beginning of wavelet_decomp.py _________________
-# import math
-# import numpy as np
-import copy
+# WAVELET DECOMPOSITION FUNCTIONS
 
-'''
-This is an exact copy of the WV1D.transform1D method in the Java repo.
-
-TODO:  add comments
-'''
 def transform1D(input_row, level):
+    '''
+    Performs row wise 1-dimensional Haar wavelet transform on a given array.
+    '''
     t = copy.deepcopy(input_row)
     avg = 0.0
     diff = 0.0
@@ -460,17 +429,15 @@ def transform1D(input_row, level):
     return t
         
 
-'''
-Find the values we need in the reconstruction process. Always keeps the first value
-(the whole-signal average), and then finds the detail coefficients for the given 
-scale.
-This is similar to the work done in CoefficientTree.jabva.getLevelIndices() and 
-MultiScale.java.getIndicesAList(), I think.
-Inputs:
-    t:  the complete wavelet transform
-    scale:  the scale to reconstruct at
-'''
 def get_values(t, scale):
+    '''
+    Find the values we need in the reconstruction process. Always keeps the first value
+    (the whole-signal average), and then finds the detail coefficients for the given 
+    scale.
+    parameters:
+        t:  the complete wavelet transform
+        scale:  the scale to reconstruct at
+    '''
     output = np.zeros(len(t))
     output[0] = t[0]
     start_index = (int) (2**(scale)) # start index for coefficients to use
@@ -480,12 +447,11 @@ def get_values(t, scale):
     return output
 
 
-'''
-This is an exact copy of the WV1D.reconstruct1D method in the Java repo.
-
-TODO: add comments
-'''
 def reconstruct1D(input):
+    '''
+    This function iteratively reconstructs a signal that has been transformed
+	by the 1-D Haar wavelet.
+    '''
     r = np.empty(len(input))
     value = 0.0
     sign = 0
@@ -505,7 +471,8 @@ def reconstruct1D(input):
     return r
 
 
-# __________________ beginning of transmitter.py ____________________
+# TRANSMITTER FUNCTIONS
+
 def colIntersection(actual, detected):
     col_int = 0.0
     # if the columns don't intersect at all
@@ -533,6 +500,9 @@ def colIntersection(actual, detected):
     return col_int
 
 def jaccard_value(t, a):
+    '''
+    Compute Jaccard similarity between transmitters.
+    '''
     jaccard = 0.0
     intersection = colIntersection(t, Transmitter(1, 1, a[0][0], a[1][0]))
     union = (t.end_col - t.start_col) + (a[1][0] - a[0][0])
@@ -616,6 +586,9 @@ class Transmitter:
 
 
 def jaccard_edges(tx1, tx2):
+    '''
+    Compute Jaccard similarity between transmitters.
+    '''
     a = [[tx1.start_col, 'r'], [tx1.end_col, 'f']]
     b = [[tx2.start_col, 'r'], [tx2.end_col, 'f']]
 
@@ -626,7 +599,7 @@ def jaccard_edges(tx1, tx2):
     # print(a)
     # print(b)
     epsilon = 1e-12
-    jaccard = intersection / (union - intersection + epsilon) # TODO sometimes union and intersection are same, so dividing by zero
+    jaccard = intersection / (union - intersection + epsilon)
     return jaccard
 
 
@@ -732,6 +705,9 @@ def learnBeta(scale, input, bs, rows):
 
 
 def findOptimalParams(spectogram):
+    '''
+    Finds optimal beta and scale to run airview with.
+    '''
     minS=1 # min scale
     maxS=6 # max scale
     startB=1 # start beta
