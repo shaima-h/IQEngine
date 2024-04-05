@@ -1,5 +1,6 @@
 # Copyright (c) 2023 Marc Lichtman.
 # Licensed under the MIT License.
+# M. Zheleva, P. Bogdanov, T. Larock and P. Schmitt, "AirVIEW: Unsupervised transmitter detection for next generation spectrum sensing," IEEE INFOCOM 2018 - IEEE Conference on Computer Communications, Honolulu, HI, USA, 2018, pp. 1673-1681, doi: 10.1109/INFOCOM.2018.8485946.
 
 import numpy as np
 import json
