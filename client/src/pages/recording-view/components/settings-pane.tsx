@@ -21,7 +21,7 @@ interface SettingsPaneProps {
 }
 
 const SettingsPane = ({ currentFFT }) => {
-  const fftSizes = [128, 256, 512, 1024, 2048, 4096, 16384, 65536];
+  const fftSizes = [16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 16384, 65536];
   const context = useSpectrogramContext();
   const cursorContext = useCursorContext();
   const [localPythonSnippet, setLocalPythonSnippet] = useState(context.pythonSnippet);
