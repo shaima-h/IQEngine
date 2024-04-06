@@ -16,6 +16,7 @@ import { vscodeDark } from '@uiw/codemirror-theme-vscode';
 import CodeMirror from '@uiw/react-codemirror';
 import { langs } from '@uiw/codemirror-extensions-langs';
 import { DisplaySpectrogram } from '../recording-view-multiple';
+import { fuseFiles } from '@/utils/fusion';
 
 interface FusionPaneProps {
   currentFFT: number;
@@ -27,7 +28,8 @@ const FusionPane = ({ currentFFT, filePaths }) => {
   const cursorContext = useCursorContext();
   const [fileStates, setFileStates] = useState({});
   const [fusionType, setFusionType] = useState<string>(null);
-//   const [localTaps, setLocalTaps] = useState(JSON.stringify(context.taps));
+  const [isFusionRunning, setIsFusionRunning] = useState(false); // TODO
+  //   const [localTaps, setLocalTaps] = useState(JSON.stringify(context.taps));
 
   const handleToggleChange = (filePath) => (event) => {
     setFileStates((prev) => ({
@@ -45,56 +47,62 @@ const FusionPane = ({ currentFFT, filePaths }) => {
     const selectedFiles: string[] = Object.keys(fileStates).filter((key: string) => fileStates[key]);
     // context.setFilePaths(selectedFiles);
     // context.setFusionType(fusionType);
-    console.log("Selected files: ", selectedFiles);
-    console.log("Selected fusion type: ", fusionType);
+    console.log('Selected files: ', selectedFiles);
+    console.log('Selected fusion type: ', fusionType);
     // console.log("Selected files in context: ", context.filePaths);
     // console.log("Selected fusion type in context: ", context.fusionType);
+
+    // TODO I think we want to pass in a list of Float32Arrays (each spectogram is a Float32Array?) idk...
+    const fusedData = fuseFiles(selectedFiles, fusionType);
+    console.log(fusedData);
   };
 
   return (
     <div className="form-control">
-        <p className="text-base">Select files to fuse:</p>
-        <div className="p-1">
-            {filePaths?.map((filePath, index) => {
-                const fileName = filePath.replace(/\.[^/.]+$/, "");
-                if (fileStates[filePath] === undefined) {
-                    setFileStates((prev) => ({
-                    ...prev,
-                    [filePath]: false,
-                    }));
-                }
-                return (
-                    <div key={index} id={`toggleFile-${index}`}>
-                        <label className="label pb-0 pt-2">
-                            <span className="label-text text-base">{fileName}</span>
-                            <input
-                                type="checkbox"
-                                className="toggle toggle-primary"
-                                checked={fileStates[fileName]}
-                                onChange={handleToggleChange(filePath)}
-                            />
-                        </label>
-                    </div>
-                );
-            })}
-        </div>
-        <div>
-            <label className="label pb-2 pt-2">
-                <span className="label-text text-base">Fusion Type</span>
-                <select
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-32 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    value={fusionType}
-                    onChange={handleFusionTypeChange}
-                >
-                    <option value="" disabled selected>Select fusion</option>
-                    <option value="addition">Addition</option>
-                    <option value="subtraction">Subtraction</option>
-                    <option value="average">Average</option>
-                </select>
-            </label>
+      <p className="text-base">Select files to fuse:</p>
+      <div className="p-1">
+        {filePaths?.map((filePath, index) => {
+          const fileName = filePath.replace(/\.[^/.]+$/, '');
+          if (fileStates[filePath] === undefined) {
+            setFileStates((prev) => ({
+              ...prev,
+              [filePath]: false,
+            }));
+          }
+          return (
+            <div key={index} id={`toggleFile-${index}`}>
+              <label className="label pb-0 pt-2">
+                <span className="label-text text-base">{fileName}</span>
+                <input
+                  type="checkbox"
+                  className="toggle toggle-primary"
+                  checked={fileStates[fileName]}
+                  onChange={handleToggleChange(filePath)}
+                />
+              </label>
+            </div>
+          );
+        })}
+      </div>
+      <div>
+        <label className="label pb-2 pt-2">
+          <span className="label-text text-base">Fusion Type</span>
+          <select
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-32 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            value={fusionType}
+            onChange={handleFusionTypeChange}
+          >
+            <option value="" disabled selected>
+              Select fusion
+            </option>
+            <option value="addition">Addition</option>
+            <option value="subtraction">Subtraction</option>
+            <option value="average">Average</option>
+          </select>
+        </label>
       </div>
 
-        <button onClick={onSubmitSelectedFiles}>Fuse data</button>
+      <button onClick={onSubmitSelectedFiles}>Fuse data</button>
     </div>
   );
 };
