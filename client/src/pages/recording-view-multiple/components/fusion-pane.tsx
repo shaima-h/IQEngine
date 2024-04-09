@@ -53,8 +53,8 @@ const FusionPane = ({ currentFFT, filePaths }) => {
     // console.log("Selected fusion type in context: ", context.fusionType);
 
     // TODO I think we want to pass in a list of Float32Arrays (each spectogram is a Float32Array?) idk...
-    const fusedData = fuseFiles(selectedFiles, fusionType);
-    console.log(fusedData);
+    // const fusedData = fuseFiles(selectedFiles, fusionType);
+    // console.log(fusedData);
   };
 
   return (
