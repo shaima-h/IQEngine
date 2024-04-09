@@ -35,6 +35,10 @@ export const Browser = () => {
   const [showModal, setShowModal] = useState(false);
   const [queryActive, setQueryActive] = useState(false);
   const [defaultRepoSet, setDefaultRepoSet] = useState(false);
+  //______________________________________________________________________________________________________________________
+  // NEW STUFF HERE___________________________________________________________
+  const [multipleFilePath, setMultipleFilePath] = useState<string[]>(null);
+  //___________________________________________________________
 
   const localDataSourceQuery = getDataSource(
     CLIENT_TYPE_LOCAL,
@@ -63,14 +67,22 @@ export const Browser = () => {
       if (filePath) {
         const spectogramLink = `/view/${CLIENT_TYPE_LOCAL}/local/single_file/${encodeURIComponent(filePath)}`;
         navigate(spectogramLink);
-      } else {
+      } 
+      // ______________________________________________________________________________________________________________________
+      // NEW STUFF HERE___________________________________________________________
+      else if (multipleFilePath) {
+        const spectogramLink = `/multiview/${CLIENT_TYPE_LOCAL}/local/multiple_files/`;
+        navigate(spectogramLink, { state: {multipleFilePath} });
+      }
+      //___________________________________________________________
+      else {
         setCurrentAccount(localDataSourceQuery.data.account);
         setCurrentContainer(localDataSourceQuery.data.container);
         setCurrentSas(null);
         console.log('Switching to a local dir');
       }
     }
-  }, [localDataSourceQuery.data, currentContainer, filePath, goToPage, currentType]);
+  }, [localDataSourceQuery.data, currentContainer, filePath, multipleFilePath, goToPage, currentType]);
 
   async function handleOnClick(container, account, sas) {
     setQueryActive(false);
@@ -104,6 +116,30 @@ export const Browser = () => {
     setGoToPage(true);
     setCurrentType(CLIENT_TYPE_LOCAL);
   };
+
+  //____________________________________________________________________________________________________________
+  // NEW STUFF HERE______________________________________________________
+  const openMultipleFilePairs = async () => {
+    console.log('opening local file');
+    const files = await fileOpen({
+      multiple: true,
+    });
+    console.log('files', files);
+    if (files.length % 2 != 0) {
+      toast('For each .sigmf-meta, please select 1 .sigmf-data file (matching)');
+      return;
+    }
+    let filesWithoutExtension: string[] = [];
+    for (var file of files) {
+      if (!filesWithoutExtension.includes(file.name.replace('.sigmf-meta', '').replace('.sigmf-data', ''))) {
+        filesWithoutExtension.push(file.name.replace('.sigmf-meta', '').replace('.sigmf-data', ''))}
+    }
+    setFiles(files);
+    setMultipleFilePath(filesWithoutExtension);
+    setGoToPage(true);
+    setCurrentType(CLIENT_TYPE_LOCAL);
+  };
+  //____________________________________________________________________________________________________________
 
   const openDir = async () => {
     console.log('opening local directory');
@@ -248,7 +284,7 @@ export const Browser = () => {
           <div
             className="gap-2 w-52 h-12 items-center outline outline-1 outline-primary rounded-lg hover:bg-accent hover:bg-opacity-50"
             id={'multiple-files'}
-            onClick={openFile}
+            onClick={openMultipleFilePairs}
             aria-label={'multiple files'}
             key={'multiplefiles'}
           >
