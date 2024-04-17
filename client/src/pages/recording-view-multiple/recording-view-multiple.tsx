@@ -24,7 +24,8 @@ import TimeSelector from './components/time-selector';
 import { AnnotationViewer } from './components/annotation/annotation-viewer';
 import TimeSelectorMinimap from './components/time-selector-minimap';
 import { useWindowSize } from 'usehooks-ts';
-import { } from './components/fusion-pane';
+import {} from './components/fusion-pane';
+import { ThreeDimPlot } from './components/three-dim-visualization';
 
 export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab }) {
   const {
@@ -108,6 +109,7 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab }) {
       {currentTab === Tab.Time && <TimePlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.Frequency && <FrequencyPlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.IQ && <IQPlot displayedIQ={displayedIQ} />}
+      {currentTab === Tab.ThreeDimensionalVisualization && <ThreeDimPlot displayedIQ={displayedIQ} />}
     </>
   );
 }
@@ -127,6 +129,7 @@ enum Tab {
   Time,
   Frequency,
   IQ,
+  ThreeDimensionalVisualization,
 }
 
 export function RecordingViewMultiplePage() {
@@ -143,7 +146,7 @@ export function RecordingViewMultiplePage() {
   const [currentFFT, setCurrentFFT] = useState<number>(0);
   const Tabs = Object.keys(Tab).filter((key) => isNaN(Number(key)));
 
-  console.log({meta});
+  console.log({ meta });
   if (!meta) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
@@ -166,8 +169,9 @@ export function RecordingViewMultiplePage() {
                       onClick={() => {
                         setCurrentTab(Tab[key as keyof typeof Tab]);
                       }}
-                      className={` ${currentTab === Tab[key as keyof typeof Tab] ? 'bg-primary !text-base-100' : ''
-                        } inline-block px-3 py-0 outline outline-primary outline-1 text-lg text-primary hover:text-accent hover:shadow-lg hover:shadow-accent`}
+                      className={` ${
+                        currentTab === Tab[key as keyof typeof Tab] ? 'bg-primary !text-base-100' : ''
+                      } inline-block px-3 py-0 outline outline-primary outline-1 text-lg text-primary hover:text-accent hover:shadow-lg hover:shadow-accent`}
                     >
                       {key}
                     </div>
