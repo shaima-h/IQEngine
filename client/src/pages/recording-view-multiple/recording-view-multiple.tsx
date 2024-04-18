@@ -25,7 +25,7 @@ import { AnnotationViewer } from './components/annotation/annotation-viewer';
 import TimeSelectorMinimap from './components/time-selector-minimap';
 import { useWindowSize } from 'usehooks-ts';
 import {} from './components/fusion-pane';
-import { ThreeDimPlot } from './components/three-dim-visualization';
+import { ThreeDimPlot } from './components/three-dim-plot';
 
 export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab }) {
   const {
