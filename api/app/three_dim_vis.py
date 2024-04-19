@@ -8,6 +8,7 @@ from fastapi import APIRouter
 import base64
 from typing import List, Optional
 from pydantic import BaseModel
+from io import BytesIO
 
 class SamplesB64(BaseModel):
     samples: str
@@ -37,9 +38,20 @@ def generate_plot(samples):
     #     plt.savefig(tmpfile.name, bbox_inches='tight')
     #     return tmpfile.name
 
-    plot_file_path = 'three-dim-plot-figure.png'
-    plt.savefig(plot_file_path)
-    return {'plot_file_path': plot_file_path}    
+    # this has to be somewhere accessible here, not localhost
+    # plot_file_path = '../../client/src/data/three-dim-plot-figure.png'
+    # plt.savefig(plot_file_path)
+    # return {'plot_file_path': plot_file_path}
+
+    # save the plot to a BytesIO buffer
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+
+    # convert the image to base64
+    base64_image = base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+    return {'plot_image_base64': base64_image}
 
 router = APIRouter()
 

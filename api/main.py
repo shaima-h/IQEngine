@@ -97,6 +97,9 @@ app.include_router(three_dim_vis)
 
 app.mount("/", SPAStaticFiles(directory="iqengine", html=True), name="iqengine")
 
+# Serve static files from the "static" directory
+# app.mount("/static", StaticFiles(directory="http://localhost:3000/static"), name="static")
+
 app.add_event_handler("startup", db) # connect to mongodb or set up in-memory db
 app.add_event_handler("startup", import_all_from_env) # adds plugins connections, feature flags, and inits datasources
 

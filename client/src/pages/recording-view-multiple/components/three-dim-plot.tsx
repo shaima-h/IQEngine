@@ -63,13 +63,15 @@ export const ThreeDimPlot = ({ displayedIQ }: IQPlotProps) => {
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
-        setPlotFilePath(data.plot_file_path);
+        setPlotFilePath(data.plot_image_base64);
       });
   }, []);
 
   return (
+    //this has to be localhost/... (client folder)
     <div className="plot-container">
-      {plotFilePath ? <img src={plotFilePath} alt="Plot" /> : <div>No plot available</div>}
+      {/* {plotFilePath ? <img src={`http://localhost:3000/${plotFilePath}`} alt="Plot" /> : <div>No plot available</div>} */}
+      {plotFilePath ? <img src={`data:image/png;base64,${plotFilePath}`} alt="Plot" /> : <div>No plot available</div>}
     </div>
   );
 };
