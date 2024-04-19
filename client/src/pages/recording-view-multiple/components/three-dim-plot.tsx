@@ -2,6 +2,7 @@ import Plot from 'react-plotly.js';
 import React, { useEffect, useState } from 'react';
 import { template } from '@/utils/plotlyTemplate';
 import { useSpectrogramContext } from '../hooks/use-spectrogram-context';
+import { convertFloat32ArrayToBase64, convertBase64ToFloat32Array } from '@/utils/rf-functions';
 
 interface IQPlotProps {
   displayedIQ: Float32Array;
@@ -19,30 +20,46 @@ export const ThreeDimPlot = ({ displayedIQ }: IQPlotProps) => {
       samples_b64: [],
     };
 
-    // const newSamps = convertFloat32ArrayToBase64(cursorData);
-    // console.log(newSamps);
+    const newSamps1 = convertFloat32ArrayToBase64(displayedIQ);
+    console.log(newSamps1);
+
+    // body = {
+    //   samples_b64: [
+    //     {
+    //       // samples: newSamps,
+    //       // sample_rate: sampleRate,
+    //       // center_freq: freq,
+    //       // data_type: MimeTypes[meta.getDataType()],
+    //     },
+    //   ],
+    // };
+
+    // samples.forEach((sample) => {
+    //   body.samples_b64.push({
+    //     samples: sample.base64Data, // Assuming each sample has a base64Data property
+    //     sample_rate: sample.sampleRate,
+    //     center_freq: sample.centerFrequency,
+    //     data_type: sample.dataType,
+    //   });
+    // });
 
     body = {
       samples_b64: [
         {
-          // samples: newSamps,
-          // sample_rate: sampleRate,
-          // center_freq: freq,
-          // data_type: MimeTypes[meta.getDataType()],
+          samples: newSamps1,
         },
       ],
     };
+    console.log(body);
 
-    const BlobFromSamples = (samples_base64, data_type) => {
-      const samples = window.atob(samples_base64);
-      var blob_array = new Uint8Array(samples.length);
-      for (var i = 0; i < samples.length; i++) {
-        blob_array[i] = samples.charCodeAt(i);
-      }
-      return new Blob([blob_array], { type: data_type });
-    };
-
-    fetch('/api/plot')
+    fetch('/api/three-dim-plot', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
