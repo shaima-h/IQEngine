@@ -13,7 +13,7 @@ export const ThreeDimPlot = ({ displayedIQ }: IQPlotProps) => {
   const [I, setI] = useState<Float32Array>();
   const [Q, setQ] = useState<Float32Array>();
 
-  const [plotFilePath, setPlotFilePath] = useState('');
+  const [plotImageData, setPlotImageData] = useState('');
 
   useEffect(() => {
     let body = {
@@ -63,7 +63,7 @@ export const ThreeDimPlot = ({ displayedIQ }: IQPlotProps) => {
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
-        setPlotFilePath(data.plot_image_base64);
+        setPlotImageData(data.plot_image_base64);
       });
   }, []);
 
@@ -71,7 +71,11 @@ export const ThreeDimPlot = ({ displayedIQ }: IQPlotProps) => {
     //this has to be localhost/... (client folder)
     <div className="plot-container">
       {/* {plotFilePath ? <img src={`http://localhost:3000/${plotFilePath}`} alt="Plot" /> : <div>No plot available</div>} */}
-      {plotFilePath ? <img src={`data:image/png;base64,${plotFilePath}`} alt="Plot" /> : <div>No plot available</div>}
+      {plotImageData ? (
+        <img src={`data:image/png;base64,${plotImageData}`} alt="Plot" style={{ width: '100%', height: 'auto' }} />
+      ) : (
+        <div>No plot available</div>
+      )}
     </div>
   );
 };
