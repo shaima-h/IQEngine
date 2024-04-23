@@ -27,9 +27,10 @@ export function useDataCacheFunctions(
   function clearIQData() {
     queryClient.removeQueries(['iqData', type, account, container, filePath, fftSize]);
     queryClient.removeQueries(['rawiqdata', type, account, container, filePath, fftSize]);
-    // queryClient.removeQueries(['iqDataMultiple', type, account, container, filePath, fftSize]);
-    // queryClient.removeQueries(['rawiqdataMultiple', type, account, container, filePath, fftSize]);
     queryClient.removeQueries(['processedIQData', type, account, container, filePath, fftSize]);
+    queryClient.removeQueries(['iqDataMultiple', type, account, container, filePath, fftSize]);
+    queryClient.removeQueries(['rawiqdataMultiple', type, account, container, filePath, fftSize]);
+    queryClient.removeQueries(['processedIQDataMultiple', type, account, container, filePath, fftSize]);
   }
   return {
     clearIQData,
@@ -47,6 +48,7 @@ export function useGetIQData(
   pythonScript: string = INITIAL_PYTHON_SNIPPET,
   fftStepSize: number = 0
 ) {
+  console.log("IN USEGETIQDATA");
   const [pyodide, setPyodide] = useState<any>(null);
 
   async function initPyodide() {
@@ -78,6 +80,7 @@ export function useGetIQData(
         : fftsRequired.length
     );
     setStateFFTsRequired(fftsRequired);
+    // console.log("new fftsRequired in single: ", fftsRequired);
   }
 
   const { data: meta } = useMeta(type, account, container, filePath);
@@ -95,6 +98,9 @@ export function useGetIQData(
     },
     enabled: !!meta && !!filesQuery.data && !!dataSourcesQuery.data,
   });
+  if (iqData) {
+    console.log("iqData in single: ", iqData);
+  }
 
   // This sets rawiqdata, rawiqdata contains all the data, while the iqData above is just the recently fetched one
   useEffect(() => {
@@ -112,6 +118,7 @@ export function useGetIQData(
         sparseIQReturnData[data.index] = data.iqArray;
       });
       const content = Object.assign([], previousData, sparseIQReturnData);
+      console.log("content in single: ", content.slice(0,20));
       queryClient.setQueryData(['rawiqdata', type, account, container, filePath, fftSize], content);
     }
   }, [iqData, fftSize]);
@@ -244,6 +251,7 @@ export function useGetIQDataMultiple(
           ? Math.ceil(MAXIMUM_SAMPLES_PER_REQUEST / fftSize)
           : fftsRequired.length
       );
+      // console.log("new fftsRequired in multiple: ", fftsRequired);
       setStateFFTsRequired(fftsRequired);
     }
 
@@ -253,28 +261,29 @@ export function useGetIQDataMultiple(
 
     const iqDataClient = IQDataClientFactoryMultiple(type, filesQuery.data, dataSourcesQuery.data, instance);
 
-    console.log("Query Key Variables:", {type, account, container, filePath, fftSize, fftsRequired});
-    console.log("enabled: ", !!meta && !!filesQuery.data && !!dataSourcesQuery.data)
-    // console.log("signal: ", signal);
     // fetches iqData, this happens first, and the iqData is in one big continuous chunk
-    // ***** this is where I get to when I click "Fuse data" in the fusion pane, but this 
-    // query block is never entered for some reason??
-    console.log("about to go into iq blocks");
-    const { data: iqData, refetch } = useQuery({
-      queryKey: ['iqData', type, account, container, filePath, fftSize, fftsRequired],
+    
+    const { data: iqData } = useQuery({
+      queryKey: ['iqDataMultiple', type, account, container, filePath, fftSize, fftsRequired],
       queryFn: async ({ signal }) => {
-        console.log("inside query function!");
+        // console.log("inside query function!");
         const iqData = await iqDataClient.getIQDataBlocksMultiple(meta, fftsRequired, fftSize, signal);
         return iqData;
       },
       enabled: !!meta && !!filesQuery.data && !!dataSourcesQuery.data,
     });
 
+    if (iqData) {
+      console.log("iqData[0] in multiple: ", iqData[0]);
+    }
+
     // This sets rawiqdata, rawiqdata contains all the data, while the iqData above is just the recently fetched one
     useEffect(() => {
+      // console.log("in useEffect");
       if (iqData) {
+        // console.log("in this useEffect if block");
         const previousData = queryClient.getQueryData<Float32Array[]>([
-          'rawiqdata',
+          'rawiqdataMultiple',
           type,
           account,
           container,
@@ -295,13 +304,14 @@ export function useGetIQDataMultiple(
           });
         });
         const content = Object.assign([], previousData, sparseIQReturnData);
-        queryClient.setQueryData(['rawiqdata', type, account, container, filePath, fftSize], content);
+        console.log("content in multiple: ", content.slice(0,20));
+        queryClient.setQueryData(['rawiqdataMultiple', type, account, container, filePath, fftSize], content);
       }
     }, [iqData, fftSize]);
 
     // fetches rawiqdata
-    const { data: processedIQData, dataUpdatedAt: processedDataUpdated } = useQuery<number[][]>({
-      queryKey: ['rawiqdata', type, account, container, filePath, fftSize],
+    const { data: processedIQDataMultiple, dataUpdatedAt: processedDataUpdated } = useQuery<number[][]>({
+      queryKey: ['rawiqdataMultiple', type, account, container, filePath, fftSize],
       queryFn: async () => {
         return [];
       },
@@ -312,7 +322,7 @@ export function useGetIQDataMultiple(
           }
           // performance.mark('start');
           let currentProcessedData = queryClient.getQueryData<number[][]>([
-            'processedIQData',
+            'processedIQDataMultiple',
             type,
             account,
             container,
@@ -346,7 +356,7 @@ export function useGetIQDataMultiple(
           // performance.mark('end');
           // const performanceMeasure = performance.measure('processing', 'start', 'end');
           queryClient.setQueryData(
-            ['processedIQData', type, account, container, filePath, fftSize, taps, squareSignal, pythonScript, !!pyodide],
+            ['processedIQDataMultiple', type, account, container, filePath, fftSize, taps, squareSignal, pythonScript, !!pyodide],
             currentProcessedData
           );
 
@@ -357,7 +367,7 @@ export function useGetIQDataMultiple(
       enabled: !!meta && !!filesQuery.data && !!dataSourcesQuery.data,
     });
 
-    const currentData = processedIQData;
+    const currentData = processedIQDataMultiple;
 
     return {
       fftSize,

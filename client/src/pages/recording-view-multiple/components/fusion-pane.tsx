@@ -42,7 +42,6 @@ const FusionPane = ({ currentFFT, filePaths }) => {
 
   const handleFusionTypeChange = (event) => {
     setFusionType(event.target.value);
-    context.setFusionType(event.target.value);
   };
 
   const onSubmitSelectedFiles = () => {
@@ -52,6 +51,7 @@ const FusionPane = ({ currentFFT, filePaths }) => {
     // context.setFusionType(fusionType);
     console.log('Selected files: ', selectedFiles);
     console.log('Selected fusion type: ', fusionType);
+    context.setFusionType(fusionType);
     // console.log("Selected files in context: ", context.filePaths);
     // console.log("Selected fusion type in context: ", context.fusionType);
 
