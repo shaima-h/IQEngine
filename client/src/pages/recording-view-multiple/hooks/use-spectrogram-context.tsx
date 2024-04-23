@@ -51,8 +51,8 @@ export function SpectrogramContextProvider({
   type,
   account,
   container,
-  initialFilePath,  // should just be the first file name in the list the user uploaded
-  initialFusionType,  // should be nothing (""), to trigger only the first trace to load at first
+  initialFilePath, // should just be the first file name in the list the user uploaded
+  initialFusionType, // should be nothing (""), to trigger only the first trace to load at first
   seedValues = {
     magnitudeMin: -30,
     magnitudeMax: 5,

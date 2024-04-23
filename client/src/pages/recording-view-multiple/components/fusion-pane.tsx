@@ -23,6 +23,8 @@ interface FusionPaneProps {
 }
 
 const FusionPane = ({ currentFFT, filePaths }) => {
+  const { meta, account, type, container, spectrogramWidth, spectrogramHeight, fftSize, selectedAnnotation, setMeta } =
+    useSpectrogramContext();
   const fftSizes = [128, 256, 512, 1024, 2048, 4096, 16384, 65536];
   const context = useSpectrogramContext();
   const cursorContext = useCursorContext();
