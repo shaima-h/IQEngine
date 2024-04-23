@@ -16,7 +16,7 @@ import { vscodeDark } from '@uiw/codemirror-theme-vscode';
 import CodeMirror from '@uiw/react-codemirror';
 import { langs } from '@uiw/codemirror-extensions-langs';
 import { DisplaySpectrogram } from '../recording-view-multiple';
-import { fuseFiles } from '@/utils/fusion';
+// import { fuseFiles } from '@/utils/fusion';
 
 interface FusionPaneProps {
   currentFFT: number;
@@ -40,6 +40,7 @@ const FusionPane = ({ currentFFT, filePaths }) => {
 
   const handleFusionTypeChange = (event) => {
     setFusionType(event.target.value);
+    context.setFusionType(event.target.value);
   };
 
   const onSubmitSelectedFiles = () => {

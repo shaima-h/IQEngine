@@ -80,28 +80,32 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab }) {
     }
   }, [displayedIQ]);
 
+  // had to comment out a bunch of features/components that were causing errors (I think
+  // to do with the metadata file and the fact that we now have multiple metadata files...) 
+  // I thought we could get the multi-trace code working first and then add these features 
+  // back in one by one??
   return (
     <>
       {currentTab === Tab.Spectrogram && (
         <>
           <Stage width={spectrogramWidth + 110} height={30}>
-            <RulerTop />
+            {/* <RulerTop /> */}
           </Stage>
           <div className="flex flex-row" id="spectrogram">
             <Stage width={spectrogramWidth} height={spectrogramHeight}>
               <Layer onWheel={handleWheel}>
                 <Image image={image} x={0} y={0} width={spectrogramWidth} height={spectrogramHeight} />
               </Layer>
-              <AnnotationViewer currentFFT={currentFFT} />
+              {/* <AnnotationViewer currentFFT={currentFFT} /> */}
               <FreqSelector />
               <TimeSelector currentFFT={currentFFT} />
             </Stage>
             <Stage width={50} height={spectrogramHeight} className="mr-1">
-              <RulerSide currentRowAtTop={currentFFT} />
+              {/* <RulerSide currentRowAtTop={currentFFT} /> */}
             </Stage>
             <Stage width={MINIMAP_FFT_SIZE + 5} height={spectrogramHeight}>
               <ScrollBar currentFFT={currentFFT} setCurrentFFT={setCurrentFFT} />
-              <TimeSelectorMinimap />
+              {/* <TimeSelectorMinimap /> */}
             </Stage>
           </div>
         </>
@@ -155,7 +159,7 @@ export function RecordingViewMultiplePage() {
     );
   }
   return (
-    <SpectrogramContextProvider type={type} account={account} container={container} filePath={filePath}>
+    <SpectrogramContextProvider type={type} account={account} container={container} initialFilePath={filePath} initialFusionType="">
       <CursorContextProvider>
         <div className="mb-0 ml-0 mr-0 p-0 pt-3">
           <div className="flex flex-row w-full">
@@ -180,7 +184,7 @@ export function RecordingViewMultiplePage() {
               </div>
               {/* The following displays the spectrogram, time, freq, and IQ plots depending on which one is selected*/}
               <DisplaySpectrogram currentFFT={currentFFT} setCurrentFFT={setCurrentFFT} currentTab={currentTab} />
-              <DisplayMetaSummary />
+              {/* <DisplayMetaSummary /> */}
             </div>
           </div>
           <div className="mt-3 mb-0 px-2 py-0" style={{ margin: '5px' }}>
@@ -206,7 +210,7 @@ export function RecordingViewMultiplePage() {
                 Raw Metadata
               </summary>
               <div className="outline outline-1 outline-primary p-2">
-                <DisplayMetadataRaw />
+                {/* <DisplayMetadataRaw /> */}
               </div>
             </details>
           </div>

@@ -1,10 +1,11 @@
-import { useGetIQData } from '@/api/iqdata/Queries';
+import { useGetIQData, useGetIQDataMultiple } from '@/api/iqdata/Queries';
 import { useMemo } from 'react';
 import { useSpectrogramContext } from './use-spectrogram-context';
 import { useDebounce } from 'usehooks-ts';
 import { FETCH_PADDING } from '@/utils/constants';
 
 export function useSpectrogram(currentFFT) {
+  // console.log("in use-spectrogram");
   const {
     type,
     account,
@@ -19,8 +20,9 @@ export function useSpectrogram(currentFFT) {
     taps,
     squareSignal,
     pythonSnippet,
+    fusionType,
   } = useSpectrogramContext();
-    const { currentData, setFFTsRequired, fftsRequired, processedDataUpdated } = useGetIQData(
+    const { currentData, setFFTsRequired, fftsRequired, processedDataUpdated } = useGetIQDataMultiple(
       type,
       account,
       container,
@@ -29,11 +31,11 @@ export function useSpectrogram(currentFFT) {
       taps,
       squareSignal,
       pythonSnippet,
-      fftStepSize
+      fftStepSize,
+      fusionType,
     );
     // console.log("fftSize: ", fftSize);
     const totalFFTs = Math.ceil(meta?.getTotalSamples() / fftSize);
-    // console.log("totalFFTs: ", totalFFTs);
     const debouncedCurrentFFT = useDebounce<string>(currentFFT, 50);
 
     // console.log("currentData: ", currentData);

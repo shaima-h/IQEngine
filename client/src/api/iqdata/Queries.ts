@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { IQDataClientFactory } from './IQDataClientFactory';
+import { IQDataClientFactory, IQDataClientFactoryMultiple } from './IQDataClientFactory';
 import { INITIAL_PYTHON_SNIPPET } from '@/utils/constants';
 import { useUserSettings } from '@/api/user-settings/use-user-settings';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -27,6 +27,8 @@ export function useDataCacheFunctions(
   function clearIQData() {
     queryClient.removeQueries(['iqData', type, account, container, filePath, fftSize]);
     queryClient.removeQueries(['rawiqdata', type, account, container, filePath, fftSize]);
+    // queryClient.removeQueries(['iqDataMultiple', type, account, container, filePath, fftSize]);
+    // queryClient.removeQueries(['rawiqdataMultiple', type, account, container, filePath, fftSize]);
     queryClient.removeQueries(['processedIQData', type, account, container, filePath, fftSize]);
   }
   return {
@@ -181,6 +183,190 @@ export function useGetIQData(
     setFFTsRequired,
     processedDataUpdated,
   };
+}
+
+export function useGetIQDataMultiple(
+  type: string,
+  account: string,
+  container: string,
+  filePath: string,
+  outerfftSize: number, // we grab 2x this many floats/ints
+  taps: number[] = [1],
+  squareSignal: boolean = false,
+  pythonScript: string = INITIAL_PYTHON_SNIPPET,
+  fftStepSize: number = 0,
+  fusionType: string,
+) {
+  // this if block should be entered when the recording-view-multiple page first loads,
+  // so there's no fusion type yet and the normal single-file process happens to load
+  // the first trace into the spectrogram only
+  if (fusionType === "") {
+    const inputfftSize = outerfftSize;  // had duplicate naming issues
+    const { fftSize, currentData, setFFTsRequired, fftsRequired, processedDataUpdated } = useGetIQData(type, account, container, filePath, inputfftSize, taps, squareSignal, pythonScript, fftStepSize);
+    return {
+      fftSize,
+      currentData,
+      fftsRequired,
+      setFFTsRequired,
+      processedDataUpdated,
+    }
+  }
+  else {
+    console.log("IN USEGETIQDATAMULTIPLE");
+    const fftSize = outerfftSize;
+    const [pyodide, setPyodide] = useState<any>(null);
+
+    async function initPyodide() {
+      console.log('Loading pyodide...');
+      const pyodide = await window.loadPyodide();
+      await pyodide.loadPackage('numpy');
+      await pyodide.loadPackage('matplotlib');
+      return pyodide;
+    }
+
+    useEffect(() => {
+      if (!pyodide && pythonScript && pythonScript !== INITIAL_PYTHON_SNIPPET && fftStepSize === 0) {
+        initPyodide().then((pyodide) => {
+          setPyodide(pyodide);
+        });
+      }
+    }, [pythonScript, fftStepSize]);
+
+    const queryClient = useQueryClient();
+    const { filesQuery, dataSourcesQuery } = useUserSettings(); 
+    const [fftsRequired, setStateFFTsRequired] = useState<number[]>([]);
+
+    // enforce MAXIMUM_SAMPLES_PER_REQUEST by truncating if need be
+    function setFFTsRequired(fftsRequired: number[]) {
+      fftsRequired = fftsRequired.slice(
+        0,
+        fftsRequired.length > Math.ceil(MAXIMUM_SAMPLES_PER_REQUEST / fftSize)
+          ? Math.ceil(MAXIMUM_SAMPLES_PER_REQUEST / fftSize)
+          : fftsRequired.length
+      );
+      setStateFFTsRequired(fftsRequired);
+    }
+
+    const { data: meta } = useMeta(type, account, container, filePath);
+
+    const { instance } = useMsal();
+
+    const iqDataClient = IQDataClientFactoryMultiple(type, filesQuery.data, dataSourcesQuery.data, instance);
+
+    console.log("Query Key Variables:", {type, account, container, filePath, fftSize, fftsRequired});
+    console.log("enabled: ", !!meta && !!filesQuery.data && !!dataSourcesQuery.data)
+    // console.log("signal: ", signal);
+    // fetches iqData, this happens first, and the iqData is in one big continuous chunk
+    // ***** this is where I get to when I click "Fuse data" in the fusion pane, but this 
+    // query block is never entered for some reason??
+    console.log("about to go into iq blocks");
+    const { data: iqData, refetch } = useQuery({
+      queryKey: ['iqData', type, account, container, filePath, fftSize, fftsRequired],
+      queryFn: async ({ signal }) => {
+        console.log("inside query function!");
+        const iqData = await iqDataClient.getIQDataBlocksMultiple(meta, fftsRequired, fftSize, signal);
+        return iqData;
+      },
+      enabled: !!meta && !!filesQuery.data && !!dataSourcesQuery.data,
+    });
+
+    // This sets rawiqdata, rawiqdata contains all the data, while the iqData above is just the recently fetched one
+    useEffect(() => {
+      if (iqData) {
+        const previousData = queryClient.getQueryData<Float32Array[]>([
+          'rawiqdata',
+          type,
+          account,
+          container,
+          filePath,
+          fftSize,
+        ]);
+        const sparseIQReturnData = [];
+        iqData.forEach((sliceArray) => {
+          sliceArray.forEach((slice) => {
+            if (sparseIQReturnData[slice.index]) {
+              // element-wise addition if row already exists in the output matrix
+              // just assuming addition for now
+              sparseIQReturnData[slice.index] = sparseIQReturnData[slice.index].map((value, i) => value + slice.iqArray.at(i));
+            } else {
+              // just assign the iqArray if no existing row is present yet in the output matrix
+              sparseIQReturnData[slice.index] = new Float32Array(slice.iqArray);
+            }
+          });
+        });
+        const content = Object.assign([], previousData, sparseIQReturnData);
+        queryClient.setQueryData(['rawiqdata', type, account, container, filePath, fftSize], content);
+      }
+    }, [iqData, fftSize]);
+
+    // fetches rawiqdata
+    const { data: processedIQData, dataUpdatedAt: processedDataUpdated } = useQuery<number[][]>({
+      queryKey: ['rawiqdata', type, account, container, filePath, fftSize],
+      queryFn: async () => {
+        return [];
+      },
+      select: useCallback(
+        (data) => {
+          if (!data) {
+            return [];
+          }
+          // performance.mark('start');
+          let currentProcessedData = queryClient.getQueryData<number[][]>([
+            'processedIQData',
+            type,
+            account,
+            container,
+            filePath,
+            fftSize,
+            taps,
+            squareSignal,
+            pythonScript,
+            !!pyodide,
+          ]);
+
+          if (!currentProcessedData) {
+            currentProcessedData = [];
+          }
+          let currentIndexes = data.map((_, i) => i);
+          // remove any data that have already being processed
+          const dataRange = currentIndexes.filter((index) => !currentProcessedData[index]);
+
+          groupContiguousIndexes(dataRange).forEach((group) => {
+            const iqData = data.slice(group.start, group.start + group.count);
+            const iqDataFloatArray = new Float32Array((iqData.length + 1) * fftSize * 2);
+            iqData.forEach((data, index) => {
+              iqDataFloatArray.set(data, index * fftSize * 2);
+            });
+            const result = applyProcessing(iqDataFloatArray, taps, squareSignal, pythonScript, pyodide);
+
+            for (let i = 0; i < group.count; i++) {
+              currentProcessedData[group.start + i] = result.slice(i * fftSize * 2, (i + 1) * fftSize * 2);
+            }
+          });
+          // performance.mark('end');
+          // const performanceMeasure = performance.measure('processing', 'start', 'end');
+          queryClient.setQueryData(
+            ['processedIQData', type, account, container, filePath, fftSize, taps, squareSignal, pythonScript, !!pyodide],
+            currentProcessedData
+          );
+
+          return currentProcessedData;
+        },
+        [!!pyodide, pythonScript, taps.join(','), squareSignal]
+      ),
+      enabled: !!meta && !!filesQuery.data && !!dataSourcesQuery.data,
+    });
+
+    const currentData = processedIQData;
+
+    return {
+      fftSize,
+      currentData,
+      fftsRequired,
+      setFFTsRequired,
+      processedDataUpdated,
+    };
+  }
 }
 
 export function useRawIQData(type, account, container, filePath, fftSize) {

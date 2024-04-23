@@ -12,7 +12,8 @@ export function useQueryClient() {
   queryClient.setQueryDefaults(['config'], { staleTime: 1000 * 60 * 60 * 24 });
   queryClient.setQueryDefaults(['datasource', CLIENT_TYPE_BLOB], { staleTime: 1000 * 60 });
   queryClient.setQueryDefaults(['plugins'], { staleTime: 1000 * 60 * 5 });
-  queryClient.setQueryDefaults(['rawiqdata'], { staleTime: Infinity });
+  // queryClient.setQueryDefaults(['rawiqdata'], { staleTime: Infinity });
+  queryClient.setQueryDefaults(['rawiqdata'], { staleTime: 1000 });  // tried decreaasing the stale time to see if that helped the query to run
   queryClient.setQueryDefaults(['iqData'], { staleTime: 5, cacheTime: 10 });
   queryClient.setQueryDefaults(['user-settings'], { staleTime: Infinity });
   queryClient.setQueryDefaults(['smart-query'], { staleTime: 1000 * 60 * 60 * 24 });
