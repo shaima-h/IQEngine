@@ -5,10 +5,10 @@ import { useSpectrogramContext } from '../hooks/use-spectrogram-context';
 import { convertFloat32ArrayToBase64, convertBase64ToFloat32Array } from '@/utils/rf-functions';
 
 interface IQPlotProps {
-  displayedIQ: Float32Array;
+  multipleIQ: Float32Array[];
 }
 
-export const ThreeDimPlot = ({ displayedIQ }: IQPlotProps) => {
+export const ThreeDimPlot = ({ multipleIQ }: IQPlotProps) => {
   const { spectrogramWidth, spectrogramHeight } = useSpectrogramContext();
   const [I, setI] = useState<Float32Array>();
   const [Q, setQ] = useState<Float32Array>();
@@ -20,36 +20,29 @@ export const ThreeDimPlot = ({ displayedIQ }: IQPlotProps) => {
       samples_b64: [],
     };
 
-    const newSamps1 = convertFloat32ArrayToBase64(displayedIQ);
-    console.log(newSamps1);
+    // const newSamps1 = convertFloat32ArrayToBase64(multipleIQ);
+    // console.log(newSamps1);
+
+    // for (const iqData of multipleIQ) {
+    //   const newSamps = convertFloat32ArrayToBase64(iqData);
+    //   body.samples_b64.push({
+    //     samples: newSamps,
+    //   });
+    // }
+
+    body = {
+      samples_b64: multipleIQ.map((iqData) => ({
+        samples: convertFloat32ArrayToBase64(iqData),
+      })),
+    };
 
     // body = {
     //   samples_b64: [
     //     {
-    //       // samples: newSamps,
-    //       // sample_rate: sampleRate,
-    //       // center_freq: freq,
-    //       // data_type: MimeTypes[meta.getDataType()],
+    //       samples: newSamps1,
     //     },
     //   ],
     // };
-
-    // samples.forEach((sample) => {
-    //   body.samples_b64.push({
-    //     samples: sample.base64Data, // Assuming each sample has a base64Data property
-    //     sample_rate: sample.sampleRate,
-    //     center_freq: sample.centerFrequency,
-    //     data_type: sample.dataType,
-    //   });
-    // });
-
-    body = {
-      samples_b64: [
-        {
-          samples: newSamps1,
-        },
-      ],
-    };
     console.log(body);
 
     fetch('/api/three-dim-plot', {
@@ -70,11 +63,10 @@ export const ThreeDimPlot = ({ displayedIQ }: IQPlotProps) => {
   return (
     //this has to be localhost/... (client folder)
     <div className="plot-container">
-      {/* {plotFilePath ? <img src={`http://localhost:3000/${plotFilePath}`} alt="Plot" /> : <div>No plot available</div>} */}
       {plotImageData ? (
         <img src={`data:image/png;base64,${plotImageData}`} alt="Plot" style={{ width: '100%', height: 'auto' }} />
       ) : (
-        <div>No plot available</div>
+        <div>Loading...</div>
       )}
     </div>
   );
