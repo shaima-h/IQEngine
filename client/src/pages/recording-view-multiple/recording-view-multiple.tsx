@@ -89,7 +89,7 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
 
       // TODO
       // need to fetch iq data from each file from filePaths
-      // should be same size as displayedIQ
+      // should be same size as displayedIQ, but doesn't have to be
       // then populate multipleIQ
       // which is passed into three-dim-plot
     }
