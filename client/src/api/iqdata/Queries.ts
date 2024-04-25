@@ -294,9 +294,19 @@ export function useGetIQDataMultiple(
         iqData.forEach((sliceArray) => {
           sliceArray.forEach((slice) => {
             if (sparseIQReturnData[slice.index]) {
-              // element-wise addition if row already exists in the output matrix
-              // just assuming addition for now
-              sparseIQReturnData[slice.index] = sparseIQReturnData[slice.index].map((value, i) => value + slice.iqArray.at(i));
+              // element-wise operation if row already exists in the output matrix
+              if (fusionType === "addition") {
+                // console.log("in ADDITION");
+                sparseIQReturnData[slice.index] = sparseIQReturnData[slice.index].map((value, i) => value + slice.iqArray.at(i));
+              }
+              else if (fusionType === "subtraction") {
+                // console.log("in SUBTRACTION");
+                sparseIQReturnData[slice.index] = sparseIQReturnData[slice.index].map((value, i) => value - slice.iqArray.at(i));
+              }
+              else if (fusionType === "average") {  // average is producing NaNs. need to fix
+                // console.log("in AVERAGE");
+                sparseIQReturnData[slice.index] = sparseIQReturnData[slice.index].map((value, i) => value/2 + slice.iqArray.at(i))/2;
+              }
             } else {
               // just assign the iqArray if no existing row is present yet in the output matrix
               sparseIQReturnData[slice.index] = new Float32Array(slice.iqArray);
@@ -310,7 +320,7 @@ export function useGetIQDataMultiple(
     }, [iqData, fftSize]);
 
     // fetches rawiqdata
-    const { data: processedIQDataMultiple, dataUpdatedAt: processedDataUpdated } = useQuery<number[][]>({
+    const { data: processedIQDataMultiple, dataUpdatedAt: processedDataUpdatedMultiple } = useQuery<number[][]>({
       queryKey: ['rawiqdataMultiple', type, account, container, filePath, fftSize],
       queryFn: async () => {
         return [];
@@ -374,7 +384,7 @@ export function useGetIQDataMultiple(
       currentData,
       fftsRequired,
       setFFTsRequired,
-      processedDataUpdated,
+      processedDataUpdatedMultiple, // trying out a serparate variable for the fused data to see if that gets the spectrogram to reload
     };
   }
 }

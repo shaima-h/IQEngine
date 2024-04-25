@@ -42,7 +42,8 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
     filePath,
     setFilePath,
   } = useSpectrogramContext();
-
+  // console.log("in DISPLAY spectrogram")
+  // console.log("currentFFT: ", currentFFT);
   const { displayedIQ, spectrogramHeight } = useSpectrogram(currentFFT);
   const [multipleIQ, setMultipleIQ] = useState([]); // State variable to hold IQ data for each file
   // console.log("displayedIQ: ", displayedIQ.slice(0,10));
