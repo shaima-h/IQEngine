@@ -49,7 +49,7 @@ def generate_plot(samples_list):
     
         # plot the spectrogram
         axis.plot_surface(T, F, spectrogram.T + z_offset, cmap='viridis')
-        z_offset += 200  # Increase the z-offset to stack spectrograms vertically
+        z_offset += 300  # Increase the z-offset to stack spectrograms vertically
 
     axis.set_xlabel('Time')
     axis.set_ylabel('Frequency')

@@ -49,7 +49,9 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
   // console.log("displayedIQ: ", displayedIQ.slice(0,10));
   const { width, height } = useWindowSize();
   // console.log("width, height: ", width, height);
-  const context = useSpectrogramContext();
+  // const context = useSpectrogramContext();
+  const newIQ = useSpectrogram(currentFFT);
+  // const [currFilePath, setCurrFilePath] = useState('');
 
   useEffect(() => {
     const spectrogramHeight = height - 450; // hand-tuned for now
@@ -79,22 +81,90 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
     }
   }
 
+  // useEffect(() => {
+  //   console.log('currFile effect', currFilePath);
+  //   setFilePath(currFilePath);
+  // }, [currFilePath]);
+
+  useEffect(() => {
+    // Check if the current tab is ThreeDimensionalVisualization
+    if (currentTab === Tab.ThreeDimensionalVisualization) {
+      console.log('in 3d effect', filePaths);
+      const listIQs = filePaths.map((file_path) => {
+        setFilePath(file_path);
+        console.log('file_path', file_path);
+        console.log('context.filePath', filePath); // this is always karyn_sample (first file), is never changing
+        console.log('****new IQ', newIQ);
+        return newIQ.displayedIQ; // filepath iqdata
+      });
+
+      console.log('****listIQs', listIQs);
+      setMultipleIQ(listIQs);
+      setFilePath(filePaths[0]); // reset to initial file path
+    }
+  }, [currentTab]);
+
   useEffect(() => {
     if (displayedIQ && displayedIQ.length > 0) {
       setIQData(displayedIQ);
 
       // works: Populate multipleIQ with IQ data for all files
-      console.log(filePaths);
-      const newIQs = [displayedIQ, displayedIQ]; // just two of the first file to test
-      setMultipleIQ(newIQs);
+      // const newIQs = [displayedIQ, displayedIQ]; // just two of the first file to test
+      // setMultipleIQ(newIQs);
 
-      // TODO
-      // need to fetch iq data from each file from filePaths
-      // should be same size as displayedIQ, but doesn't have to be
-      // then populate multipleIQ
-      // which is passed into three-dim-plot
+      // =========== works, same file 2x
+      // console.log(filePaths);
+      // const listIQs = filePaths.map((file_path) => {
+      //   setCurrFilePath(file_path);
+      //   console.log('currFile', currFilePath);
+      //   // setFilePath(file_path);
+
+      //   // so newIQ is same as displayedIQ
+      //   // so changing context.filepath is not affecting useSpectogram(currrentfft)
+      //   // what is connection between context and useSpectogram??
+      //   // how to like pass context into useSpectogram??
+      //   console.log('file_path', file_path);
+      //   console.log('context.filePath', filePath);
+      //   console.log('****new IQ', newIQ);
+      //   return newIQ.displayedIQ; // filepath iqdata
+      // });
+
+      // console.log('****listIQs', listIQs);
+      // setMultipleIQ(listIQs);
+      // setFilePath(filePaths[0]); // reset to initial file path
     }
   }, [displayedIQ]);
+
+  useEffect(() => {
+    console.log('EFFECT context.filePath', filePath);
+  }, [filePath]);
+
+  // useEffect(() => {
+  // console.log(filePaths);
+  // const listIQs = filePaths.map((filePath) => {
+  //   setFilePath(filePath);
+  //   console.log(filePath);
+  //   console.log('****new IQ', newIQ);
+  //   return newIQ.displayedIQ; // filepath iqdata
+  // });
+  // console.log('****listIQs', listIQs);
+  // setMultipleIQ(listIQs);
+  // setFilePath(filePaths[0]); // reset to initial file path
+  // const fetchDataForFilePath = async (filePath) => {
+  //   setFilePath(filePath);
+  //   const { displayedIQ } = useSpectrogram(currentFFT);
+  //   return displayedIQ;
+  // };
+  // const fetchDataForAllFilePaths = async () => {
+  //   const iqDataList = [];
+  //   for (const filePath of filePaths) {
+  //     const iqData = await fetchDataForFilePath(filePath);
+  //     iqDataList.push(iqData);
+  //   }
+  //   setMultipleIQ(iqDataList);
+  // };
+  // fetchDataForAllFilePaths();
+  // }, [filePaths]);
 
   // had to comment out a bunch of features/components that were causing errors (I think
   // to do with the metadata file and the fact that we now have multiple metadata files...)

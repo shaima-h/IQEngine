@@ -89,10 +89,6 @@ export function SpectrogramContextProvider({
     setPythonLocalSnippet(pythonParameterSnippet);
   }
 
-  // Fetch metadata when file path changes
-  // const { data: originMeta, refetch: refetchMeta } = useMeta(type, account, container, filePath);
-  // const [meta, setMeta] = useState<SigMFMetadata>(originMeta);
-
   useEffect(() => {
     setMeta(originMeta);
   }, [originMeta]);

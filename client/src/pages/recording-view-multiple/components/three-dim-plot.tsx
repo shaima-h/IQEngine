@@ -14,6 +14,22 @@ export const ThreeDimPlot = ({ multipleIQ }: IQPlotProps) => {
   const [Q, setQ] = useState<Float32Array>();
 
   const [plotImageData, setPlotImageData] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 30000); // 30 seconds timeout
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    // Set isLoading to false when plotImageData is available
+    if (plotImageData) {
+      setIsLoading(false);
+    }
+  }, [plotImageData]);
 
   useEffect(() => {
     let body = {
@@ -61,13 +77,12 @@ export const ThreeDimPlot = ({ multipleIQ }: IQPlotProps) => {
   }, []);
 
   return (
-    //this has to be localhost/... (client folder)
     <div className="plot-container">
-      {plotImageData ? (
+      {!isLoading && plotImageData && (
         <img src={`data:image/png;base64,${plotImageData}`} alt="Plot" style={{ width: '100%', height: 'auto' }} />
-      ) : (
-        <div>Loading...</div>
       )}
+      {isLoading && <div>Loading...</div>}
+      {!isLoading && !plotImageData && <div>No plot generated</div>}
     </div>
   );
 };
