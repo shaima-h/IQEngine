@@ -19,7 +19,7 @@ export const ThreeDimPlot = ({ multipleIQ }: IQPlotProps) => {
   useEffect(() => {
     const timeout = setTimeout(() => {
       setIsLoading(false);
-    }, 30000); // 30 seconds timeout
+    }, 15000); // 15 seconds timeout
 
     return () => clearTimeout(timeout);
   }, []);
@@ -36,29 +36,12 @@ export const ThreeDimPlot = ({ multipleIQ }: IQPlotProps) => {
       samples_b64: [],
     };
 
-    // const newSamps1 = convertFloat32ArrayToBase64(multipleIQ);
-    // console.log(newSamps1);
-
-    // for (const iqData of multipleIQ) {
-    //   const newSamps = convertFloat32ArrayToBase64(iqData);
-    //   body.samples_b64.push({
-    //     samples: newSamps,
-    //   });
-    // }
-
     body = {
       samples_b64: multipleIQ.map((iqData) => ({
         samples: convertFloat32ArrayToBase64(iqData),
       })),
     };
 
-    // body = {
-    //   samples_b64: [
-    //     {
-    //       samples: newSamps1,
-    //     },
-    //   ],
-    // };
     console.log(body);
 
     fetch('/api/three-dim-plot', {

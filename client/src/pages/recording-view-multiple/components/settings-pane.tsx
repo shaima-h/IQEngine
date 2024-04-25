@@ -106,7 +106,7 @@ const SettingsPane = ({ currentFFT, filePaths }) => {
 
     const fftSize = context.fftSize;
     const imageHeight = context.spectrogramHeight;
-    const totalSamples = context.meta.getTotalSamples();
+    const totalSamples = context.meta.getTotalSamples(); // *** ERRORS HERE WHEN FILEPATH CHANGED
     const onePercent = totalSamples / fftSize / 100;
 
     const zoomLevels = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];

@@ -139,33 +139,6 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
     console.log('EFFECT context.filePath', filePath);
   }, [filePath]);
 
-  // useEffect(() => {
-  // console.log(filePaths);
-  // const listIQs = filePaths.map((filePath) => {
-  //   setFilePath(filePath);
-  //   console.log(filePath);
-  //   console.log('****new IQ', newIQ);
-  //   return newIQ.displayedIQ; // filepath iqdata
-  // });
-  // console.log('****listIQs', listIQs);
-  // setMultipleIQ(listIQs);
-  // setFilePath(filePaths[0]); // reset to initial file path
-  // const fetchDataForFilePath = async (filePath) => {
-  //   setFilePath(filePath);
-  //   const { displayedIQ } = useSpectrogram(currentFFT);
-  //   return displayedIQ;
-  // };
-  // const fetchDataForAllFilePaths = async () => {
-  //   const iqDataList = [];
-  //   for (const filePath of filePaths) {
-  //     const iqData = await fetchDataForFilePath(filePath);
-  //     iqDataList.push(iqData);
-  //   }
-  //   setMultipleIQ(iqDataList);
-  // };
-  // fetchDataForAllFilePaths();
-  // }, [filePaths]);
-
   // had to comment out a bunch of features/components that were causing errors (I think
   // to do with the metadata file and the fact that we now have multiple metadata files...)
   // I thought we could get the multi-trace code working first and then add these features
