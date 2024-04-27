@@ -81,16 +81,11 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
     }
   }
 
-  // useEffect(() => {
-  //   console.log('currFile effect', currFilePath);
-  //   setFilePath(currFilePath);
-  // }, [currFilePath]);
-
   useEffect(() => {
     // Check if the current tab is ThreeDimensionalVisualization
     if (currentTab === Tab.ThreeDimensionalVisualization) {
       console.log('in 3d effect', filePaths);
-      const listIQs = filePaths.map((file_path) => {
+      const listIQData = filePaths.map((file_path) => {
         setFilePath(file_path);
         console.log('file_path', file_path);
         console.log('context.filePath', filePath); // this is always karyn_sample (first file), is never changing
@@ -98,8 +93,8 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
         return newIQ.displayedIQ; // filepath iqdata
       });
 
-      console.log('****listIQs', listIQs);
-      setMultipleIQ(listIQs);
+      console.log('****listIQs', listIQData);
+      setMultipleIQ(listIQData);
       setFilePath(filePaths[0]); // reset to initial file path
     }
   }, [currentTab]);
@@ -186,6 +181,26 @@ export function DisplayMetaSummary() {
   const { meta } = useSpectrogramContext();
   return <MetaViewer meta={meta} />;
 }
+
+// export function threeDimPlot() {
+//   const location = useLocation();
+//   const { multipleFilePath } = location.state || {};
+//   const context = useSpectrogramContext();
+
+//   const listIQData = multipleFilePath.map((file_path) => {
+//     context.setFilePath(file_path);
+//     console.log('file_path', file_path);
+//     console.log('context.filePath', context.filePath); // this is always karyn_sample (first file), is never changing
+//     const newIQ = useSpectrogram(context.fftSize);
+//     console.log('****new IQ', newIQ);
+//     return newIQ.displayedIQ; // filepath iqdata
+//   });
+
+//   console.log('****listIQs', listIQData);
+//   const multipleIQ = listIQData;
+//   context.setFilePath(multipleFilePath[0]); // reset to initial file path
+//   return <ThreeDimPlot multipleIQ={multipleIQ} />;
+// }
 
 enum Tab {
   Spectrogram,
