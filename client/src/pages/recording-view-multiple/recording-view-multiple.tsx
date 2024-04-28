@@ -101,6 +101,7 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
 
   useEffect(() => {
     if (displayedIQ && displayedIQ.length > 0) {
+      console.log('displayspectrogram EFFECT displayedIQ');
       setIQData(displayedIQ);
 
       // works: Populate multipleIQ with IQ data for all files
