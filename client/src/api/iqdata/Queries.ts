@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { IQDataClientFactory, IQDataClientFactoryMultiple } from './IQDataClientFactory';
+import { useSpectrogramContext } from '../../pages/recording-view-multiple/hooks/use-spectrogram-context';
 import { INITIAL_PYTHON_SNIPPET } from '@/utils/constants';
 import { useUserSettings } from '@/api/user-settings/use-user-settings';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -219,6 +220,7 @@ export function useGetIQDataMultiple(
     }
   }
   else {
+    const context = useSpectrogramContext();
     console.log("IN USEGETIQDATAMULTIPLE");
     const fftSize = outerfftSize;
     const [pyodide, setPyodide] = useState<any>(null);
@@ -240,6 +242,10 @@ export function useGetIQDataMultiple(
     }, [pythonScript, fftStepSize]);
 
     const queryClient = useQueryClient();
+    if (context.needRefresh == 1) {
+      useDataCacheFunctions(context.type, context.account, context.container, context.filePath, context.fftSize).clearIQData();
+      context.setNeedRefresh(0);
+    }
     const { filesQuery, dataSourcesQuery } = useUserSettings(); 
     const [fftsRequired, setStateFFTsRequired] = useState<number[]>([]);
 

@@ -52,6 +52,7 @@ const FusionPane = ({ currentFFT, filePaths }) => {
     console.log('Selected files: ', selectedFiles);
     console.log('Selected fusion type: ', fusionType);
     context.setFusionType(fusionType);
+    context.setNeedRefresh(1);
     // console.log("Selected files in context: ", context.filePaths);
     // console.log("Selected fusion type in context: ", context.fusionType);
   };
