@@ -296,16 +296,16 @@ export function useGetIQDataMultiple(
             if (sparseIQReturnData[slice.index]) {
               // element-wise operation if row already exists in the output matrix
               if (fusionType === "addition") {
-                // console.log("in ADDITION");
+                console.log("in ADDITION");
                 sparseIQReturnData[slice.index] = sparseIQReturnData[slice.index].map((value, i) => value + slice.iqArray.at(i));
               }
               else if (fusionType === "subtraction") {
-                // console.log("in SUBTRACTION");
+                console.log("in SUBTRACTION");
                 sparseIQReturnData[slice.index] = sparseIQReturnData[slice.index].map((value, i) => value - slice.iqArray.at(i));
               }
               else if (fusionType === "average") {  // average is producing NaNs. need to fix
-                // console.log("in AVERAGE");
-                sparseIQReturnData[slice.index] = sparseIQReturnData[slice.index].map((value, i) => value/2 + slice.iqArray.at(i))/2;
+                console.log("in AVERAGE");
+                sparseIQReturnData[slice.index] = sparseIQReturnData[slice.index].map((value, i) => (value + slice.iqArray.at(i))/2);
               }
             } else {
               // just assign the iqArray if no existing row is present yet in the output matrix
