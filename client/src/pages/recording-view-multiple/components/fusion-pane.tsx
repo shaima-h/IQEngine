@@ -16,13 +16,15 @@ import { vscodeDark } from '@uiw/codemirror-theme-vscode';
 import CodeMirror from '@uiw/react-codemirror';
 import { langs } from '@uiw/codemirror-extensions-langs';
 import { DisplaySpectrogram } from '../recording-view-multiple';
-import { fuseFiles } from '@/utils/fusion';
+// import { fuseFiles } from '@/utils/fusion';
 
 interface FusionPaneProps {
   currentFFT: number;
 }
 
 const FusionPane = ({ currentFFT, filePaths }) => {
+  const { meta, account, type, container, spectrogramWidth, spectrogramHeight, fftSize, selectedAnnotation, setMeta } =
+    useSpectrogramContext();
   const fftSizes = [128, 256, 512, 1024, 2048, 4096, 16384, 65536];
   const context = useSpectrogramContext();
   const cursorContext = useCursorContext();
@@ -49,6 +51,7 @@ const FusionPane = ({ currentFFT, filePaths }) => {
     // context.setFusionType(fusionType);
     console.log('Selected files: ', selectedFiles);
     console.log('Selected fusion type: ', fusionType);
+    context.setFusionType(fusionType);
     // console.log("Selected files in context: ", context.filePaths);
     // console.log("Selected fusion type in context: ", context.fusionType);
 

@@ -24,9 +24,10 @@ import TimeSelector from './components/time-selector';
 import { AnnotationViewer } from './components/annotation/annotation-viewer';
 import TimeSelectorMinimap from './components/time-selector-minimap';
 import { useWindowSize } from 'usehooks-ts';
-import { } from './components/fusion-pane';
+import {} from './components/fusion-pane';
+import { ThreeDimPlot } from './components/three-dim-plot';
 
-export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab }) {
+export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, filePaths }) {
   const {
     spectrogramWidth,
     magnitudeMin,
@@ -38,12 +39,17 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab }) {
     meta,
     setSpectrogramWidth,
     setSpectrogramHeight,
+    filePath,
+    setFilePath,
   } = useSpectrogramContext();
-
+  // console.log("in DISPLAY spectrogram")
+  // console.log("currentFFT: ", currentFFT);
   const { displayedIQ, spectrogramHeight } = useSpectrogram(currentFFT);
+  const [multipleIQ, setMultipleIQ] = useState([]); // State variable to hold IQ data for each file
   // console.log("displayedIQ: ", displayedIQ.slice(0,10));
   const { width, height } = useWindowSize();
   // console.log("width, height: ", width, height);
+  const context = useSpectrogramContext();
 
   useEffect(() => {
     const spectrogramHeight = height - 450; // hand-tuned for now
@@ -76,31 +82,46 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab }) {
   useEffect(() => {
     if (displayedIQ && displayedIQ.length > 0) {
       setIQData(displayedIQ);
+
+      // works: Populate multipleIQ with IQ data for all files
+      console.log(filePaths);
+      const newIQs = [displayedIQ, displayedIQ]; // just two of the first file to test
+      setMultipleIQ(newIQs);
+
+      // TODO
+      // need to fetch iq data from each file from filePaths
+      // should be same size as displayedIQ, but doesn't have to be
+      // then populate multipleIQ
+      // which is passed into three-dim-plot
     }
   }, [displayedIQ]);
 
+  // had to comment out a bunch of features/components that were causing errors (I think
+  // to do with the metadata file and the fact that we now have multiple metadata files...)
+  // I thought we could get the multi-trace code working first and then add these features
+  // back in one by one??
   return (
     <>
       {currentTab === Tab.Spectrogram && (
         <>
           <Stage width={spectrogramWidth + 110} height={30}>
-            <RulerTop />
+            {/* <RulerTop /> */}
           </Stage>
           <div className="flex flex-row" id="spectrogram">
             <Stage width={spectrogramWidth} height={spectrogramHeight}>
               <Layer onWheel={handleWheel}>
                 <Image image={image} x={0} y={0} width={spectrogramWidth} height={spectrogramHeight} />
               </Layer>
-              <AnnotationViewer currentFFT={currentFFT} />
+              {/* <AnnotationViewer currentFFT={currentFFT} /> */}
               <FreqSelector />
               <TimeSelector currentFFT={currentFFT} />
             </Stage>
             <Stage width={50} height={spectrogramHeight} className="mr-1">
-              <RulerSide currentRowAtTop={currentFFT} />
+              {/* <RulerSide currentRowAtTop={currentFFT} /> */}
             </Stage>
             <Stage width={MINIMAP_FFT_SIZE + 5} height={spectrogramHeight}>
               <ScrollBar currentFFT={currentFFT} setCurrentFFT={setCurrentFFT} />
-              <TimeSelectorMinimap />
+              {/* <TimeSelectorMinimap /> */}
             </Stage>
           </div>
         </>
@@ -108,6 +129,7 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab }) {
       {currentTab === Tab.Time && <TimePlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.Frequency && <FrequencyPlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.IQ && <IQPlot displayedIQ={displayedIQ} />}
+      {currentTab === Tab.ThreeDimensionalVisualization && <ThreeDimPlot multipleIQ={multipleIQ} />}
     </>
   );
 }
@@ -127,6 +149,7 @@ enum Tab {
   Time,
   Frequency,
   IQ,
+  ThreeDimensionalVisualization,
 }
 
 export function RecordingViewMultiplePage() {
@@ -141,9 +164,10 @@ export function RecordingViewMultiplePage() {
   // const meta = null;
   const [currentTab, setCurrentTab] = useState<Tab>(Tab.Spectrogram);
   const [currentFFT, setCurrentFFT] = useState<number>(0);
+  const [filePaths, setFilePaths] = useState<number>(0);
   const Tabs = Object.keys(Tab).filter((key) => isNaN(Number(key)));
 
-  console.log({meta});
+  console.log({ meta });
   if (!meta) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
@@ -152,7 +176,13 @@ export function RecordingViewMultiplePage() {
     );
   }
   return (
-    <SpectrogramContextProvider type={type} account={account} container={container} filePath={filePath}>
+    <SpectrogramContextProvider
+      type={type}
+      account={account}
+      container={container}
+      initialFilePath={initialFilePath}
+      initialFusionType=""
+    >
       <CursorContextProvider>
         <div className="mb-0 ml-0 mr-0 p-0 pt-3">
           <div className="flex flex-row w-full">
@@ -166,8 +196,9 @@ export function RecordingViewMultiplePage() {
                       onClick={() => {
                         setCurrentTab(Tab[key as keyof typeof Tab]);
                       }}
-                      className={` ${currentTab === Tab[key as keyof typeof Tab] ? 'bg-primary !text-base-100' : ''
-                        } inline-block px-3 py-0 outline outline-primary outline-1 text-lg text-primary hover:text-accent hover:shadow-lg hover:shadow-accent`}
+                      className={` ${
+                        currentTab === Tab[key as keyof typeof Tab] ? 'bg-primary !text-base-100' : ''
+                      } inline-block px-3 py-0 outline outline-primary outline-1 text-lg text-primary hover:text-accent hover:shadow-lg hover:shadow-accent`}
                     >
                       {key}
                     </div>
@@ -175,8 +206,13 @@ export function RecordingViewMultiplePage() {
                 })}
               </div>
               {/* The following displays the spectrogram, time, freq, and IQ plots depending on which one is selected*/}
-              <DisplaySpectrogram currentFFT={currentFFT} setCurrentFFT={setCurrentFFT} currentTab={currentTab} />
-              <DisplayMetaSummary />
+              <DisplaySpectrogram
+                currentFFT={currentFFT}
+                setCurrentFFT={setCurrentFFT}
+                currentTab={currentTab}
+                filePaths={multipleFilePath}
+              />
+              {/* <DisplayMetaSummary /> */}
             </div>
           </div>
           <div className="mt-3 mb-0 px-2 py-0" style={{ margin: '5px' }}>
@@ -201,9 +237,7 @@ export function RecordingViewMultiplePage() {
               <summary className="pl-2 mt-2 bg-primary outline outline-1 outline-primary text-lg text-base-100 hover:bg-green-800">
                 Raw Metadata
               </summary>
-              <div className="outline outline-1 outline-primary p-2">
-                <DisplayMetadataRaw />
-              </div>
+              <div className="outline outline-1 outline-primary p-2">{/* <DisplayMetadataRaw /> */}</div>
             </details>
           </div>
         </div>

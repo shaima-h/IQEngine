@@ -22,16 +22,18 @@ const Sidebar = ({ currentFFT, filePaths }) => {
           <FusionPane currentFFT={currentFFT} filePaths={filePaths} />
         </div>
       </details>
-      
+      {/* I commented out the Settings and Plugins panes for now since they were causing extra issues.. 
+          I thought we could get the multi-trace stuff working first, then add back in these panes? */}
       <details open>
         <summary className="pl-2 bg-primary outline outline-1 outline-primary text-lg text-base-100 hover:bg-green-800">
           Settings
         </summary>
         <div className="outline outline-1 outline-primary p-2">
-          <SettingsPane currentFFT={currentFFT} />
+          <SettingsPane currentFFT={currentFFT} filePaths={filePaths} />
         </div>
       </details>
 
+      {/* 
       <details>
         <summary className="pl-2 mt-2 bg-primary outline outline-1 outline-primary text-lg text-base-100 hover:bg-green-800">
           Plugins
@@ -39,7 +41,7 @@ const Sidebar = ({ currentFFT, filePaths }) => {
         <div className="outline outline-1 outline-primary p-2">
           <PluginsPane />
         </div>
-      </details>
+      </details> */}
     </div>
   );
 };

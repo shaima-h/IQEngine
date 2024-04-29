@@ -28,3 +28,15 @@ export const IQDataClientFactory = (
       throw new Error(`Unknown data source type: ${type}`);
   }
 };
+
+// forces return type of LocalClient for now instead of option for api, local, 
+// or blob. Just wanted to worry about the LocalClient type first (since this 
+// is what we are always assigned when we use IQEngine, it seems)
+export const IQDataClientFactoryMultiple = (
+  type: string,
+  files: FileWithDirectoryAndFileHandle[],
+  dataSources: Record<string, DataSource>,
+  instance: IPublicClientApplication,
+): LocalClient => {
+    return new LocalClient(files);
+};

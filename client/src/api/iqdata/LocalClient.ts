@@ -50,26 +50,99 @@ export class LocalClient implements IQDataClient {
   ): Promise<IQDataSlice[]> {
 
     const localDirectory: FileWithDirectoryAndFileHandle[] = this.files;
+    // console.log("localDirectory: ", localDirectory);
     if (!localDirectory) {
       return Promise.reject('No local directory found');
     }
-
+    // console.log("meta in LocalClient: ", meta);
     const filePath = meta.getOrigin().file_path;
+    // console.log("filePath in LocalClient: ", filePath);
     const dataFile = localDirectory.find((file) => {
       return file.webkitRelativePath === filePath + '.sigmf-data' || file.name === filePath + '.sigmf-data';
     });
+    // console.log("dataFile in LocalClient: ", dataFile);
     if (!dataFile) {
       return Promise.reject('No data file found');
     }
 
+    // console.log("indexes: ", indexes);
     return Promise.all(indexes.map(async (index) => {
       const bytesPerIQSample = meta.getBytesPerIQSample();
+      // console.log("bytesPerIQsample single: ", bytesPerIQSample);
       const countBytes = blockSize * bytesPerIQSample;
+      // console.log("countBytes single: ", countBytes);
       const offsetBytes = index * countBytes;
+      // console.log("offsetBytes single: ", offsetBytes);
       const slice = dataFile.slice(offsetBytes, offsetBytes + countBytes);
+      // console.log("slice single: ", slice);
       const buffer = await slice.arrayBuffer();
+      // console.log("buffer single: ", buffer);
       const iqArray = convertToFloat32(buffer, meta.getDataType());
+      // console.log("index, iqArray single: ", index, iqArray);
       return { index, iqArray };
     }));
+  }
+
+  getIQDataBlocksMultiple(
+    meta: SigMFMetadata,
+    indexes: number[],
+    blockSize: number,
+    signal: AbortSignal
+    ): Promise<IQDataSlice[][]> {
+
+    // console.log("in getIQDataBlocksMultiple");
+    // This is assumes the files are the EXACT same size (ie, the files are essentially 
+    // copies of each other is all I've tested...)
+    // for now, this also fuses all traces (regarless of what the user toggled in the fusion pane)
+    const localDirectory: FileWithDirectoryAndFileHandle[] = this.files;
+    // console.log("localDirectory multiple: ", localDirectory);
+    if (!localDirectory) {
+      return Promise.reject('No local directory found');
+    }
+    // console.log("meta in LocalClient multiple: ", meta);
+    // const filePath = meta.getOrigin().file_path;
+    let filePaths: string[] = [];
+    localDirectory.forEach((handle) => {
+      if (!filePaths.includes(handle.name.replace('.sigmf-meta', '').replace('.sigmf-data', ''))) {
+        filePaths.push(handle.name.replace('.sigmf-meta', '').replace('.sigmf-data', ''))}
+    });
+    // console.log("filePaths in LocalClient multiple: ", filePaths);
+
+    const dataFiles: FileWithDirectoryAndFileHandle[] = [];
+    filePaths.forEach((filePath) => {
+      const dataFile = localDirectory.find((file) => {
+        return file.webkitRelativePath === filePath + '.sigmf-data' || file.name === filePath + '.sigmf-data';
+      });
+      if (!dataFile) {
+        console.log("No data file found");
+        // return Promise.reject('No data file found');
+      }
+      else {
+        dataFiles.push(dataFile);
+      }
+    });
+    if (dataFiles.length === 0) {
+      return Promise.reject('No data file found');
+    }
+    // console.log("dataFiles in LocalClient multiple: ", dataFiles);
+
+    // console.log("indexes: ", indexes);
+    return Promise.all(dataFiles.map(dataFile =>
+      Promise.all(indexes.map(async (index) => {
+        const bytesPerIQSample = meta.getBytesPerIQSample();
+        // console.log("bytesPerIQSample: ", bytesPerIQSample);
+        const countBytes = blockSize * bytesPerIQSample;
+        // console.log("countBytes: ", countBytes);
+        const offsetBytes = index * countBytes;
+        // console.log("offsetBytes: ", offsetBytes);
+        const slice = dataFile.slice(offsetBytes, offsetBytes + countBytes);
+        // console.log("slice: ", slice);
+        const buffer = await slice.arrayBuffer();
+        // console.log("buffer: ", buffer);
+        const iqArray = convertToFloat32(buffer, meta.getDataType());
+        // console.log("index, iqArray: ", index, iqArray);
+        return { index, iqArray };
+      }))
+    ))
   }
 }

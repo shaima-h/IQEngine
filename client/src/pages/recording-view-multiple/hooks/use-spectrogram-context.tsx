@@ -9,6 +9,7 @@ interface SpectrogramContextProperties {
   account: string;
   container: string;
   filePath: string;
+  setFilePath: (filePath: string) => void;
   magnitudeMin: number;
   setMagnitudeMin: (magnitudeMin: number) => void;
   magnitudeMax: number;
@@ -39,6 +40,8 @@ interface SpectrogramContextProperties {
   setCanDownload: (canDownload: boolean) => void;
   selectedAnnotation?: number;
   setSelectedAnnotation: (selectedAnnotation: number) => void;
+  fusionType: string;
+  setFusionType: (fusionType: string) => void;
 }
 
 export const SpectrogramContext = createContext<SpectrogramContextProperties>(null);
@@ -48,7 +51,8 @@ export function SpectrogramContextProvider({
   type,
   account,
   container,
-  filePath,
+  initialFilePath, // should just be the first file name in the list the user uploaded
+  initialFusionType, // should be nothing (""), to trigger only the first trace to load at first
   seedValues = {
     magnitudeMin: -30,
     magnitudeMax: 5,
@@ -60,6 +64,8 @@ export function SpectrogramContextProvider({
     fftStepSize: 0,
   },
 }) {
+  const [filePath, setFilePath] = useState<string>(initialFilePath);
+  const [fusionType, setFusionType] = useState<string>(initialFusionType);
   const [magnitudeMin, setMagnitudeMin] = useState<number>(seedValues.magnitudeMin);
   const [magnitudeMax, setMagnitudeMax] = useState<number>(seedValues.magnitudeMax);
   const [colmap, setColmap] = useState<string>(seedValues.colmap);
@@ -83,6 +89,10 @@ export function SpectrogramContextProvider({
     setPythonLocalSnippet(pythonParameterSnippet);
   }
 
+  // Fetch metadata when file path changes
+  // const { data: originMeta, refetch: refetchMeta } = useMeta(type, account, container, filePath);
+  // const [meta, setMeta] = useState<SigMFMetadata>(originMeta);
+
   useEffect(() => {
     setMeta(originMeta);
   }, [originMeta]);
@@ -94,6 +104,7 @@ export function SpectrogramContextProvider({
         account,
         container,
         filePath,
+        setFilePath,
         magnitudeMin,
         setMagnitudeMin,
         magnitudeMax,
@@ -124,6 +135,8 @@ export function SpectrogramContextProvider({
         setCanDownload,
         selectedAnnotation,
         setSelectedAnnotation,
+        fusionType,
+        setFusionType,
       }}
     >
       {children}

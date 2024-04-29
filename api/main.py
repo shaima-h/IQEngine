@@ -14,6 +14,7 @@ from app.plugins_router import router as plugins_router
 from app.status_router import router as status_router
 from app.users_router import router as users_router
 from app.converter_router import router as converter_router
+from app.three_dim_vis import router as three_dim_vis
 
 from helpers.apidisconnect import CancelOnDisconnectRoute
 from helpers.import_env import import_all_from_env
@@ -92,8 +93,12 @@ app.include_router(config_router)
 app.include_router(plugins_router)
 app.include_router(users_router)
 app.include_router(converter_router)
+app.include_router(three_dim_vis)
 
 app.mount("/", SPAStaticFiles(directory="iqengine", html=True), name="iqengine")
+
+# Serve static files from the "static" directory
+# app.mount("/static", StaticFiles(directory="http://localhost:3000/static"), name="static")
 
 app.add_event_handler("startup", db) # connect to mongodb or set up in-memory db
 app.add_event_handler("startup", import_all_from_env) # adds plugins connections, feature flags, and inits datasources

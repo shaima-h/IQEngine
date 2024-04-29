@@ -2,7 +2,7 @@
 // Copyright (c) 2023 Marc Lichtman
 // Licensed under the MIT License
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
@@ -15,17 +15,42 @@ import { useCursorContext } from '../hooks/use-cursor-context';
 import { vscodeDark } from '@uiw/codemirror-theme-vscode';
 import CodeMirror from '@uiw/react-codemirror';
 import { langs } from '@uiw/codemirror-extensions-langs';
+// import { useDataCacheFunctions } from '@/api/iqdata/Queries';
 
 interface SettingsPaneProps {
   currentFFT: number;
 }
 
-const SettingsPane = ({ currentFFT }) => {
+const SettingsPane = ({ currentFFT, filePaths }) => {
   const fftSizes = [128, 256, 512, 1024, 2048, 4096, 16384, 65536];
   const context = useSpectrogramContext();
   const cursorContext = useCursorContext();
   const [localPythonSnippet, setLocalPythonSnippet] = useState(context.pythonSnippet);
   const [localTaps, setLocalTaps] = useState(JSON.stringify(context.taps));
+  const [displayedFile, setDisplayedFile] = useState('');
+  const [fileStates, setFileStates] = useState({});
+
+  // Set the displayedFile state to default to the first file path
+  useEffect(() => {
+    if (filePaths && filePaths.length > 0) {
+      setDisplayedFile(filePaths[0]);
+    }
+  }, [filePaths]);
+
+  // const { clearIQData } = useDataCacheFunctions(
+  //   context.type,
+  //   context.account,
+  //   context.container,
+  //   displayedFile, // Pass the displayed file path
+  //   context.fftSize // Pass the fftSize from your context or adjust as needed
+  // );
+
+  const handleDisplayFileChange = (e) => {
+    const selectedFilePath = e.target.value;
+    // clearIQData(); // This function should clear any existing data related to the spectrogram
+    setDisplayedFile(selectedFilePath);
+    context.setFilePath(selectedFilePath);
+  };
 
   const onChangeWindowFunction = (event) => {
     const newWindowFunction = event.currentTarget.dataset.value;
@@ -109,6 +134,21 @@ const SettingsPane = ({ currentFFT }) => {
 
   return (
     <div className="form-control">
+      <label className="label pb-2 pt-2">
+        Display File:
+        <select
+          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-32 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          value={displayedFile}
+          onChange={handleDisplayFileChange}
+        >
+          {filePaths?.map((filePath, index) => (
+            <option key={index} value={filePath}>
+              {filePath.replace(/\.[^/.]+$/, '')}
+            </option>
+          ))}
+        </select>
+      </label>
+
       <label className="mb-3" id="formZoom">
         <span className="label-text text-base ">Zoom Level</span>
         <input

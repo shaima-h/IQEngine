@@ -1,10 +1,11 @@
-import { useGetIQData } from '@/api/iqdata/Queries';
+import { useGetIQData, useGetIQDataMultiple } from '@/api/iqdata/Queries';
 import { useMemo } from 'react';
 import { useSpectrogramContext } from './use-spectrogram-context';
 import { useDebounce } from 'usehooks-ts';
 import { FETCH_PADDING } from '@/utils/constants';
 
 export function useSpectrogram(currentFFT) {
+  // console.log("in use-spectrogram");
   const {
     type,
     account,
@@ -19,8 +20,10 @@ export function useSpectrogram(currentFFT) {
     taps,
     squareSignal,
     pythonSnippet,
+    fusionType,
   } = useSpectrogramContext();
-    const { currentData, setFFTsRequired, fftsRequired, processedDataUpdated } = useGetIQData(
+    console.log("in use-spectrogram");
+    const { currentData, setFFTsRequired, fftsRequired, processedDataUpdated, processedDataUpdatedMultiple } = useGetIQDataMultiple(
       type,
       account,
       container,
@@ -29,12 +32,14 @@ export function useSpectrogram(currentFFT) {
       taps,
       squareSignal,
       pythonSnippet,
-      fftStepSize
+      fftStepSize,
+      fusionType,
     );
     // console.log("fftSize: ", fftSize);
     const totalFFTs = Math.ceil(meta?.getTotalSamples() / fftSize);
-    // console.log("totalFFTs: ", totalFFTs);
+    // console.log("totalFTTs", totalFFTs);
     const debouncedCurrentFFT = useDebounce<string>(currentFFT, 50);
+    // console.log("debouncedCurrentFFTs", debouncedCurrentFFT);
 
     // console.log("currentData: ", currentData);
     // This is the list of ffts we display
@@ -70,12 +75,13 @@ export function useSpectrogram(currentFFT) {
 
       if (!currentData || Object.keys(currentData).length === 0) {
         setFFTsRequired(requiredBlocks);
-        console.log("in this bad if");
+        // console.log("in this NULL if, new ffts: ", requiredBlocks);
         return null;
       }
       // check if the blocks are already loaded
       const blocksToLoad = requiredBlocks.filter((block) => !currentData[block]);
       setFFTsRequired(blocksToLoad);
+      // console.log("there's currentData, new ffts: ", blocksToLoad);
 
       // return the data with 0s for the missing blocks
       const iqData = new Float32Array(spectrogramHeight * fftSize * 2);
@@ -97,6 +103,7 @@ export function useSpectrogram(currentFFT) {
       return iqData;
     }, [
       processedDataUpdated,
+      processedDataUpdatedMultiple,
       fftSize,
       debouncedCurrentFFT,
       fftStepSize,
@@ -105,7 +112,7 @@ export function useSpectrogram(currentFFT) {
       taps,
       squareSignal,
     ]);
-    console.log("displayedIQ: ", displayedIQ);
+    // console.log("displayedIQ: ", displayedIQ);
     return {
       totalFFTs,
       currentFFT,
