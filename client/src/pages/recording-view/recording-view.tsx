@@ -24,9 +24,6 @@ import TimeSelector from './components/time-selector';
 import { AnnotationViewer } from './components/annotation/annotation-viewer';
 import TimeSelectorMinimap from './components/time-selector-minimap';
 import { useWindowSize } from 'usehooks-ts';
-{/*----- NEW TAB --------*/}
-import { Test } from './components/test';
-{/*----- END OFNEW ------*/}
 
 export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab }) {
   const {
@@ -126,13 +123,15 @@ export function DisplayMetaSummary() {
   return <MetaViewer meta={meta} />;
 }
 
-{/*----- ADDED ENUM FOR TEST TAB ------*/}
+{
+  /*----- ADDED ENUM FOR TEST TAB ------*/
+}
 enum Tab {
   Spectrogram,
   Time,
   Frequency,
   IQ,
-  TEST
+  TEST,
 }
 
 export function RecordingViewPage() {
@@ -164,8 +163,9 @@ export function RecordingViewPage() {
                       onClick={() => {
                         setCurrentTab(Tab[key as keyof typeof Tab]);
                       }}
-                      className={` ${currentTab === Tab[key as keyof typeof Tab] ? 'bg-primary !text-base-100' : ''
-                        } inline-block px-3 py-0 outline outline-primary outline-1 text-lg text-primary hover:text-accent hover:shadow-lg hover:shadow-accent`}
+                      className={` ${
+                        currentTab === Tab[key as keyof typeof Tab] ? 'bg-primary !text-base-100' : ''
+                      } inline-block px-3 py-0 outline outline-primary outline-1 text-lg text-primary hover:text-accent hover:shadow-lg hover:shadow-accent`}
                     >
                       {key}
                     </div>
