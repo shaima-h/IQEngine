@@ -28,7 +28,8 @@ class SpectrogramData(BaseModel):
 def generate_plot(samples_list):
 
     fft_size = 1024
-    num_rows = int(np.floor(len(samples_list[0])/fft_size))
+    # num_rows = int(np.floor(len(samples_list[0])/fft_size))
+    num_rows = 650
 
     data = []
     z_offset = 0
@@ -38,8 +39,8 @@ def generate_plot(samples_list):
             spectrogram[i,:] = 10*np.log10(np.abs(np.fft.fftshift(np.fft.fft(samples[i*fft_size:(i+1)*fft_size])))**2)
     
         print(spectrogram.shape)
-        data.append(go.Surface(z=spectrogram + z_offset, opacity=0.9, showscale=False, colorscale='viridis'))
-        z_offset += 150  # Increase the z-offset to stack spectrograms vertically
+        data.append(go.Surface(z=spectrogram + z_offset, opacity=0.8, showscale=False, colorscale='viridis'))
+        z_offset += 350  # Increase the z-offset to stack spectrograms vertically
         
     layout = go.Layout(
         scene=dict(
@@ -130,7 +131,20 @@ async def get_plot(spectograms: SpectrogramData):
 
 if __name__ == "__main__":
     # Example of how to test your detector locally
-    fname = "/Users/shaimahussaini/classes/icsi499/file_pairs/karyns_sample" # base name
-    samples = np.fromfile(fname + '.sigmf-data', dtype=np.complex64)
-    samples_list = [samples, samples]
+    fname = "/Users/shaimahussaini/classes/icsi499/file_pairs/USRP_S1_K1_573000000.0_2024_04_05-01_05_47_PM" # base name
+    samples1 = np.fromfile(fname + '.sigmf-data', dtype=np.complex64)
+    
+    fname = "/Users/shaimahussaini/classes/icsi499/file_pairs/USRP_S1_K1_573000000.0_2024_04_05-01_08_31_PM" # base name
+    samples2 = np.fromfile(fname + '.sigmf-data', dtype=np.complex64)
+    
+    fname = "/Users/shaimahussaini/classes/icsi499/file_pairs/USRP_S1_K1_573000000.0_2024_04_05-01_08_49_PM" # base name
+    samples3 = np.fromfile(fname + '.sigmf-data', dtype=np.complex64)
+    
+    fname = "/Users/shaimahussaini/classes/icsi499/file_pairs/USRP_S1_K1_573000000.0_2024_04_05-01_09_05_PM" # base name
+    samples4 = np.fromfile(fname + '.sigmf-data', dtype=np.complex64)
+    
+    fname = "/Users/shaimahussaini/classes/icsi499/file_pairs/USRP_S1_K1_573000000.0_2024_04_05-01_09_40_PM" # base name
+    samples5 = np.fromfile(fname + '.sigmf-data', dtype=np.complex64)
+    
+    samples_list = [samples1, samples2, samples3, samples4, samples5]
     generate_plot(samples_list)
