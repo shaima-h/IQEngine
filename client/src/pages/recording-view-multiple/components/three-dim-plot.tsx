@@ -10,10 +10,10 @@ import { useSpectrogram } from '../hooks/use-spectrogram';
 //   multipleIQ: Float32Array[];
 // }
 
-interface PlotImageData {
-  data: [];
-  layout: {};
-}
+// interface PlotImageData {
+//   data: [];
+//   layout: {};
+// }
 
 export const ThreeDimPlot = ({ filePaths, currentFFT }) => {
   const { spectrogramWidth, spectrogramHeight, fftSize } = useSpectrogramContext();
@@ -53,6 +53,7 @@ export const ThreeDimPlot = ({ filePaths, currentFFT }) => {
   useEffect(() => {
     const listIQData = filePaths.map((file_path) => {
       context.setFilePath(file_path);
+      context.setNeedRefresh(1);
       console.log('file_path', file_path);
       console.log('context.filePath', context.filePath);
       console.log('currIQ', currIQ.displayedIQ);
