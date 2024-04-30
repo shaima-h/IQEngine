@@ -6,6 +6,7 @@ import math
 from airview import findAvgAdjDiffCoarse
 from airview import multiscale_detection_getDefaultRegions
 epsilon = 0.01
+
 '''
 Code for RadView Research paper. Implemented in code following algorithm
 '''
