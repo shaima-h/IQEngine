@@ -26,7 +26,6 @@ import TimeSelectorMinimap from './components/time-selector-minimap';
 import { useWindowSize } from 'usehooks-ts';
 import {} from './components/fusion-pane';
 import { ThreeDimPlot } from './components/three-dim-plot';
-import { useGetIQDataMultiple } from '@/api/iqdata/Queries'; // Import the hook
 import { list } from 'postcss';
 
 export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, filePaths }) {
@@ -51,29 +50,7 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
   // console.log("in DISPLAY spectrogram")
   // console.log("currentFFT: ", currentFFT);
   const { displayedIQ, spectrogramHeight } = useSpectrogram(currentFFT);
-  const [multipleIQ, setMultipleIQ] = useState([]); // State variable to hold IQ data for each file
-  // console.log("displayedIQ: ", displayedIQ.slice(0,10));
   const { width, height } = useWindowSize();
-  // console.log("width, height: ", width, height);
-  // const context = useSpectrogramContext();
-  const newIQ = useSpectrogram(currentFFT);
-  const [currFilePath, setCurrFilePath] = useState('');
-  // const listMultIQs = [];
-  const [currFileIndex, setCurrFileIndex] = useState(0);
-  // const { type, account, container } = useParams();
-  // const { currentData, setFFTsRequired, fftsRequired, processedDataUpdated, processedDataUpdatedMultiple } =
-  //   useGetIQDataMultiple(
-  //     type,
-  //     account,
-  //     container,
-  //     currFilePath,
-  //     fftSize,
-  //     taps,
-  //     squareSignal,
-  //     pythonSnippet,
-  //     fftStepSize,
-  //     fusionType
-  //   );
 
   useEffect(() => {
     const spectrogramHeight = height - 450; // hand-tuned for now
@@ -104,99 +81,10 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
   }
 
   useEffect(() => {
-    // // works: but just displays the first file twice
-    // if (currentTab === Tab.ThreeDimensionalVisualization) {
-    //   console.log('in 3d effect', filePaths);
-    //   const listIQData = filePaths.map((file_path) => {
-    //     setFilePath(file_path);
-    //     console.log('file_path', file_path);
-    //     console.log('context.filePath', filePath); // this is always karyn_sample (first file), is never changing
-    //     console.log('****image', image);
-    //     return image; // filepath iqdata
-    //   });
-
-    //   console.log('****listIQs', listIQData);
-    //   setMultipleIQ(listIQData);
-    //   // setFilePath(filePaths[0]); // reset to initial file path
-    // }
-
-    // if (currentTab === Tab.ThreeDimensionalVisualization) {
-    //   // Create an async function to iterate through filePaths
-    //   const processFiles = async () => {
-    //     const listIQData = [];
-    //     for (const file_path of filePaths) {
-    //       // // Set the file path in the context
-    //       setFilePath(file_path);
-
-    //       // console.log('file_path', file_path);
-    //       console.log('context.filePath', filePath);
-    //       console.log('threeDimVis', threeDimVis);
-    //       console.log('newIQ displayed', displayedIQ);
-    //       listIQData.push(displayedIQ);
-    //     }
-
-    //     console.log('listIQs', listIQData);
-    //     setMultipleIQ(listIQData); // Update the state with the list of image data
-    //   };
-
-    //   processFiles(); // Call the async function
-
-    // setFilePath(filePaths[0]);
-    // console.log('reset context.filePath', filePath);
-    // console.log('reset threeDimVis', threeDimVis);
-
-    // return () => {
-    //   if (currentTab === Tab.ThreeDimensionalVisualization) {
-    //     setFilePath(filePaths[0]);
-    //   }
-    // };
-
-    /**
-     * MY LOGIC
-     * when user clicks on three dim tab
-     * set context's filepath to first filepath in filePaths (using currfileindex = 0)
-     * incremement currfileindex
-     * then displayedIQ useEffect should be called (bc context changed, so useSpectogram() hook should automatically be triggered causing displayedIQ to change)
-     * then add this changed displayedIQ (should be displayedIQ data of next file) to multipleIQ list
-     * then context's filepath should be set to next filepath in filePaths using currfileindex which was already incremented
-     * and so on...
-     * until currfileindex === filePaths.length, meaning all files displayedIQ data have been added to multipleIQ
-     * then reset context's filepath to the first filepath, so there are no issues on the other tabs
-     * then reset multipleIQ array to empty so it won't keep accumulating data when user clicks on other tabs then comes back to 3D
-     * results:
-     * its populating multipleIQ with like 3-5 copies of either file 1 or file 2...
-     */
-    if (currentTab === Tab.ThreeDimensionalVisualization && currFileIndex !== -1) {
-      setFilePath(filePaths[currFileIndex]);
-      console.log('currfileindex', currFileIndex);
-      console.log('curr filepath', filePaths[currFileIndex]);
-      console.log('setfilepath', filePath);
-      setCurrFileIndex(currFileIndex + 1);
-
-      // iterated through all files
-      if (currFileIndex === filePaths.length) {
-        // setMultipleIQ(updatedListMultIQs);
-        console.log('doneee', multipleIQ);
-        setFilePath(filePaths[0]);
-        setCurrFileIndex(-1); // setting to -1 to signify done with 3d, so won't infinitely keep going
-      } else if (currentTab !== Tab.ThreeDimensionalVisualization) {
-        // reset back to 0 so when user switches to 3d tab again, it will repopulate multipleIQ
-        setCurrFileIndex(0);
-        setMultipleIQ([]);
-      }
-    }
-  }, [currentTab, currFileIndex, setMultipleIQ]);
-
-  useEffect(() => {
     if (displayedIQ && displayedIQ.length > 0) {
       setIQData(displayedIQ);
-      // const listMultIQs = [];
-      // listMultIQs.push(displayedIQ);
-      // const updatedListMultIQs = [...multipleIQ, displayedIQ];
-      setMultipleIQ((prevMultipleIQ) => [...prevMultipleIQ, displayedIQ]);
-      console.log('multipleIQ', multipleIQ);
     }
-  }, [displayedIQ, setMultipleIQ]);
+  }, [displayedIQ]);
 
   useEffect(() => {
     console.log('EFFECT context.filePath', filePath);
@@ -237,19 +125,12 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
       {currentTab === Tab.Time && <TimePlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.Frequency && <FrequencyPlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.IQ && <IQPlot displayedIQ={displayedIQ} />}
-      {currentTab === Tab.ThreeDimensionalVisualization && <ThreeDimPlot multipleIQ={multipleIQ} />}
+      {currentTab === Tab.ThreeDimensionalVisualization && (
+        <ThreeDimPlot filePaths={filePaths} currentFFT={currentFFT} />
+      )}
     </>
   );
 }
-
-// {currentTab === Tab.ThreeDimensionalVisualization && (
-//   <>
-//     <button className="mb-3" onClick={onPressGenerate3D} style={{ width: '100%', marginTop: '5px' }}>
-//       Generate 3D Plot
-//     </button>
-//     <ThreeDimPlot multipleIQ={multipleIQ} />
-//   </>
-// )}
 
 export function DisplayMetadataRaw() {
   const { meta } = useSpectrogramContext();
@@ -260,26 +141,6 @@ export function DisplayMetaSummary() {
   const { meta } = useSpectrogramContext();
   return <MetaViewer meta={meta} />;
 }
-
-// export function threeDimPlot() {
-//   const location = useLocation();
-//   const { multipleFilePath } = location.state || {};
-//   const context = useSpectrogramContext();
-
-//   const listIQData = multipleFilePath.map((file_path) => {
-//     context.setFilePath(file_path);
-//     console.log('file_path', file_path);
-//     console.log('context.filePath', context.filePath); // this is always karyn_sample (first file), is never changing
-//     const newIQ = useSpectrogram(context.fftSize);
-//     console.log('****new IQ', newIQ);
-//     return newIQ.displayedIQ; // filepath iqdata
-//   });
-
-//   console.log('****listIQs', listIQData);
-//   const multipleIQ = listIQData;
-//   context.setFilePath(multipleFilePath[0]); // reset to initial file path
-//   return <ThreeDimPlot multipleIQ={multipleIQ} />;
-// }
 
 enum Tab {
   Spectrogram,
