@@ -42,6 +42,8 @@ interface SpectrogramContextProperties {
   setSelectedAnnotation: (selectedAnnotation: number) => void;
   fusionType: string;
   setFusionType: (fusionType: string) => void;
+  needRefresh: number;
+  setNeedRefresh: (needRefresh: number) => void;
 }
 
 export const SpectrogramContext = createContext<SpectrogramContextProperties>(null);
@@ -62,10 +64,12 @@ export function SpectrogramContextProvider({
     spectrogramHeight: 800,
     spectrogramWidth: 1024,
     fftStepSize: 0,
+    needRefresh: 0,
   },
 }) {
   const [filePath, setFilePath] = useState<string>(initialFilePath);
   const [fusionType, setFusionType] = useState<string>(initialFusionType);
+  const [needRefresh, setNeedRefresh] = useState<number>(seedValues.needRefresh);
   const [magnitudeMin, setMagnitudeMin] = useState<number>(seedValues.magnitudeMin);
   const [magnitudeMax, setMagnitudeMax] = useState<number>(seedValues.magnitudeMax);
   const [colmap, setColmap] = useState<string>(seedValues.colmap);
@@ -88,10 +92,6 @@ export function SpectrogramContextProvider({
     clearIQData();
     setPythonLocalSnippet(pythonParameterSnippet);
   }
-
-  // Fetch metadata when file path changes
-  // const { data: originMeta, refetch: refetchMeta } = useMeta(type, account, container, filePath);
-  // const [meta, setMeta] = useState<SigMFMetadata>(originMeta);
 
   useEffect(() => {
     setMeta(originMeta);
@@ -137,6 +137,8 @@ export function SpectrogramContextProvider({
         setSelectedAnnotation,
         fusionType,
         setFusionType,
+        needRefresh,
+        setNeedRefresh,
       }}
     >
       {children}

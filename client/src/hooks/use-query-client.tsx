@@ -18,6 +18,8 @@ export function useQueryClient() {
   queryClient.setQueryDefaults(['iqDataMultiple'], { staleTime: 5, cacheTime: 10 });
   queryClient.setQueryDefaults(['user-settings'], { staleTime: Infinity });
   queryClient.setQueryDefaults(['smart-query'], { staleTime: 1000 * 60 * 60 * 24 });
+  queryClient.setQueryDefaults(['processedIQDataMultiple'], {staleTime: 1000, cacheTime: 1000 });
+  queryClient.setQueryDefaults(['processedIQData'], {staleTime: 1000, cacheTime: 1000 });
 
   return {
     queryClient,

@@ -15,7 +15,6 @@ import { useCursorContext } from '../hooks/use-cursor-context';
 import { vscodeDark } from '@uiw/codemirror-theme-vscode';
 import CodeMirror from '@uiw/react-codemirror';
 import { langs } from '@uiw/codemirror-extensions-langs';
-// import { useDataCacheFunctions } from '@/api/iqdata/Queries';
 
 interface SettingsPaneProps {
   currentFFT: number;
@@ -37,17 +36,8 @@ const SettingsPane = ({ currentFFT, filePaths }) => {
     }
   }, [filePaths]);
 
-  // const { clearIQData } = useDataCacheFunctions(
-  //   context.type,
-  //   context.account,
-  //   context.container,
-  //   displayedFile, // Pass the displayed file path
-  //   context.fftSize // Pass the fftSize from your context or adjust as needed
-  // );
-
   const handleDisplayFileChange = (e) => {
     const selectedFilePath = e.target.value;
-    // clearIQData(); // This function should clear any existing data related to the spectrogram
     setDisplayedFile(selectedFilePath);
     context.setFilePath(selectedFilePath);
   };

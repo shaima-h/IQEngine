@@ -26,6 +26,7 @@ import TimeSelectorMinimap from './components/time-selector-minimap';
 import { useWindowSize } from 'usehooks-ts';
 import {} from './components/fusion-pane';
 import { ThreeDimPlot } from './components/three-dim-plot';
+import { list } from 'postcss';
 
 export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, filePaths }) {
   const {
@@ -41,15 +42,15 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
     setSpectrogramHeight,
     filePath,
     setFilePath,
+    taps,
+    squareSignal,
+    pythonSnippet,
+    fusionType,
   } = useSpectrogramContext();
   // console.log("in DISPLAY spectrogram")
   // console.log("currentFFT: ", currentFFT);
   const { displayedIQ, spectrogramHeight } = useSpectrogram(currentFFT);
-  const [multipleIQ, setMultipleIQ] = useState([]); // State variable to hold IQ data for each file
-  // console.log("displayedIQ: ", displayedIQ.slice(0,10));
   const { width, height } = useWindowSize();
-  // console.log("width, height: ", width, height);
-  const context = useSpectrogramContext();
 
   useEffect(() => {
     const spectrogramHeight = height - 450; // hand-tuned for now
@@ -82,19 +83,14 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
   useEffect(() => {
     if (displayedIQ && displayedIQ.length > 0) {
       setIQData(displayedIQ);
-
-      // works: Populate multipleIQ with IQ data for all files
-      console.log(filePaths);
-      const newIQs = [displayedIQ, displayedIQ]; // just two of the first file to test
-      setMultipleIQ(newIQs);
-
-      // TODO
-      // need to fetch iq data from each file from filePaths
-      // should be same size as displayedIQ, but doesn't have to be
-      // then populate multipleIQ
-      // which is passed into three-dim-plot
     }
   }, [displayedIQ]);
+
+  useEffect(() => {
+    console.log('EFFECT context.filePath', filePath);
+    // listMultIQs.push(newIQ.displayedIQ);
+    // setMultipleIQ(listMultIQs);
+  }, [filePath]);
 
   // had to comment out a bunch of features/components that were causing errors (I think
   // to do with the metadata file and the fact that we now have multiple metadata files...)
@@ -129,7 +125,9 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
       {currentTab === Tab.Time && <TimePlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.Frequency && <FrequencyPlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.IQ && <IQPlot displayedIQ={displayedIQ} />}
-      {currentTab === Tab.ThreeDimensionalVisualization && <ThreeDimPlot multipleIQ={multipleIQ} />}
+      {currentTab === Tab.ThreeDimensionalVisualization && (
+        <ThreeDimPlot filePaths={filePaths} currentFFT={currentFFT} />
+      )}
     </>
   );
 }
