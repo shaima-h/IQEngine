@@ -3,6 +3,8 @@ import json
 import airview
 from pydantic.dataclasses import dataclass
 import math
+from airview import findAvgAdjDiffCoarse
+from airview import multiscale_detection_getDefaultRegions
 epsilon = 0.01
 
 def findTransmitters(input, scale, beta, fft_size):
@@ -21,17 +23,20 @@ def findTransmitters(input, scale, beta, fft_size):
     #split temporal vector into chunks before sending it to airview
     #slice into size 32 chunks
     #Preprocessing - taking file and chopping it up into chunks of 32
-    extraRows = PT_maxhold % 32
-    perfectSizeT = PT_maxhold - extraRows
-    #feed each slice of 32 into airview
-    chunkOf32T = perfectSizeT/32
-    detectionInFreqVec = airview(scale, beta, chunkOf32T) #send frequency vector to airview to capture any detections
+    if fft_size > 16: 
+        extraRows = PT_maxhold % 32
+        perfectSizeT = PT_maxhold - extraRows
+        #feed each slice of 32 into airview
+        chunkOf32T = perfectSizeT/32
+        detectionInFreqVec = airview(scale, beta, chunkOf32T) #send frequency vector to airview to capture any detections
+    else:
+        detectionInFreqVec = airview(scale, beta, PF_maxhold) #send frequency vector to airview to capture any detections
 
     
     #if the fft size is grerater than 16 in tthat case we have to chunk the frequency as well
     if fft_size > 16:
         extraCol = PF_maxhold % 32
-        perfectSizeF = PF_maxhold - extraRows
+        perfectSizeF = PF_maxhold - extraCol
         #feed each slice of 32 into airview
         chunkOf32F = perfectSizeF/32  
         detectionInTimeVec = airview(scale, beta, chunkOf32F) #send time vector to airview to capture any detections
@@ -53,12 +58,13 @@ def findTransmitters(input, scale, beta, fft_size):
     # c is best computed to be 32 not too low or high
     c = 32
     maskOverTimeVec = waveMask(detectionInTimeVec, c, threshold) #Temporal characterization
-    maskOverFreqVec = waveMask(detectionInTimeVec, c, threshold) #Frequency characterization
+    maskOverFreqVec = waveMask(detectionInFreqVec, c, threshold) #Frequency characterization
 
     #postProcessing for the temporal we have chunks of 32 now we need to append and put it into one big array
     #take time mask vector and frequncy mask vector and take the outer product of that and that is gonna give
     #me time over frequncy mask
-    return reconcileFullDetection()
+    fulldetection = np.outer(maskOverTimeVec, maskOverFreqVec)  #outerproduct
+    return fulldetection
 
 @dataclass
 class Plugin:
@@ -123,8 +129,8 @@ class Plugin:
             "data_output" : [],
             "annotations" : annotations
         }
-        
-        
+
+
 def computeMaxHold(input):
     #take the maxhold in each row and column 
     #input is the spectogram 1D with a whole bunch of rows we iterate through
@@ -155,19 +161,8 @@ def computeMaxHold(input):
     return PT, PF
 
 
-
-def multiscale_product(wavelet_decomposition):
-    
-    
-def wavelet_decomposition(Pj):
-    '''
-    function implementation goes here
-    '''
-    
-
-
 #wavelet based masking (Algorithm 2)
-def wavemask(P, chunk_size, threshold):
+def waveMask(P, chunk_size, threshold, scale):
     '''
     Return a 0-1 mask of transmitter activity
     '''
@@ -185,7 +180,7 @@ def wavemask(P, chunk_size, threshold):
     detection_mask = np.zeros(len(P))
     
     # T is the total length of the data 
-    T = len(P)   #T is the lenght of the data???????????????????
+    T = len(P)   
 
     # Loop over chunks of size c
     for i in range(1, T, chunk_size):
@@ -195,15 +190,29 @@ def wavemask(P, chunk_size, threshold):
         chunk = P[chunk_start:chunk_end]
         
 
-        # Step 2: Compute Wavelet Decomposition and lossy reconstruct at levels l and l-1  ?????
-        #level l and l-1  ??????
-        wavelet_decomposition = wavelet_decomposition(chunk)
+        # Step 2: Compute Wavelet Decomposition and lossy reconstruct at levels l and l-1
+        '''
+        Get the "default" regions, meaning only the regions of constant power
+        without any filtering or thresholding.
+
+        return:
+        list[float]: DESC HERE
+        '''
+        '''
+        Multiscale transform. Takes an input vector and two scales. Transforms
+        the signal and builds a coefficient tree. Gets the relevant indices for
+        each input level and reconstructs the signal twice, once using each set
+        of indices. Finally, the element-wise product is taken between the two
+        reconstructions and this is the multiscale transform.
+        Includes lossy reconstrruction and multiscale product.
+        '''
         
-        lossy_reconstruction = lossy_reconstruction()
+        for r, row in enumerate(input):
+            scale1 = math.log2(len(row)) - scale
+            scale2 = math.log2(len(row)) - (scale + 1)
 
-        # Step 3: Compute Multiscale Product
-        multiscale_product = multiscale_product(wavelet_decomposition) #just multiply the two
-
+        multiscale_product = multiscale_detection_getDefaultRegions(input, scale1, scale2)
+        
         # Step 4: Compute Pairwise Differences
         pairwise_differences = np.abs(np.diff(multiscale_product))
 
@@ -211,7 +220,9 @@ def wavemask(P, chunk_size, threshold):
         for j in pairwise_differences:    
             if j > threshold:
                 # Step 6: Produce Detection Mask for Chunk
-                detection_mask[chunk_start:chunk_end - 1] = j.astype(int)
+                detection_mask[chunk_start:chunk_end - 1] = 1
+            else: 
+                detection_mask[chunk_start:chunk_end - 1] = 0
 
     return detection_mask
      
