@@ -24,9 +24,7 @@ import TimeSelector from './components/time-selector';
 import { AnnotationViewer } from './components/annotation/annotation-viewer';
 import TimeSelectorMinimap from './components/time-selector-minimap';
 import { useWindowSize } from 'usehooks-ts';
-{/*----- NEW TAB --------*/}
-import { Test } from './components/test';
-{/*----- END OFNEW ------*/}
+import { ThreeDimPlot } from './components/three-dim-plot';
 
 export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab }) {
   const {
@@ -108,10 +106,7 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab }) {
       {currentTab === Tab.Time && <TimePlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.Frequency && <FrequencyPlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.IQ && <IQPlot displayedIQ={displayedIQ} />}
-
-      {/*-------- BEGINNING TEST TAB HERE -------*/}
-      {currentTab === Tab.TEST && <Test displayedIQ={displayedIQ} />}
-      {/*-------- END OF TEST TAB ---------------*/}
+      {currentTab === Tab.ThreeDimensionalVisualization && <ThreeDimPlot displayedIQ={displayedIQ} />}
     </>
   );
 }
@@ -126,13 +121,12 @@ export function DisplayMetaSummary() {
   return <MetaViewer meta={meta} />;
 }
 
-{/*----- ADDED ENUM FOR TEST TAB ------*/}
 enum Tab {
   Spectrogram,
   Time,
   Frequency,
   IQ,
-  TEST
+  ThreeDimensionalVisualization,
 }
 
 export function RecordingViewPage() {
@@ -164,8 +158,9 @@ export function RecordingViewPage() {
                       onClick={() => {
                         setCurrentTab(Tab[key as keyof typeof Tab]);
                       }}
-                      className={` ${currentTab === Tab[key as keyof typeof Tab] ? 'bg-primary !text-base-100' : ''
-                        } inline-block px-3 py-0 outline outline-primary outline-1 text-lg text-primary hover:text-accent hover:shadow-lg hover:shadow-accent`}
+                      className={` ${
+                        currentTab === Tab[key as keyof typeof Tab] ? 'bg-primary !text-base-100' : ''
+                      } inline-block px-3 py-0 outline outline-primary outline-1 text-lg text-primary hover:text-accent hover:shadow-lg hover:shadow-accent`}
                     >
                       {key}
                     </div>

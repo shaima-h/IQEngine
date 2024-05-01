@@ -26,7 +26,6 @@ import TimeSelectorMinimap from './components/time-selector-minimap';
 import { useWindowSize } from 'usehooks-ts';
 import {} from './components/fusion-pane';
 import { ThreeDimPlot } from './components/three-dim-plot';
-import { list } from 'postcss';
 
 export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, filePaths }) {
   const {
@@ -40,17 +39,12 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
     meta,
     setSpectrogramWidth,
     setSpectrogramHeight,
-    filePath,
-    setFilePath,
-    taps,
-    squareSignal,
-    pythonSnippet,
-    fusionType,
   } = useSpectrogramContext();
   // console.log("in DISPLAY spectrogram")
   // console.log("currentFFT: ", currentFFT);
   const { displayedIQ, spectrogramHeight } = useSpectrogram(currentFFT);
   const { width, height } = useWindowSize();
+  const [multipleIQ, setMultipleIQ] = useState([]); // IQ data to send to 3d plot
 
   useEffect(() => {
     const spectrogramHeight = height - 450; // hand-tuned for now
@@ -83,19 +77,10 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
   useEffect(() => {
     if (displayedIQ && displayedIQ.length > 0) {
       setIQData(displayedIQ);
+      setMultipleIQ([displayedIQ]);
     }
   }, [displayedIQ]);
 
-  useEffect(() => {
-    console.log('EFFECT context.filePath', filePath);
-    // listMultIQs.push(newIQ.displayedIQ);
-    // setMultipleIQ(listMultIQs);
-  }, [filePath]);
-
-  // had to comment out a bunch of features/components that were causing errors (I think
-  // to do with the metadata file and the fact that we now have multiple metadata files...)
-  // I thought we could get the multi-trace code working first and then add these features
-  // back in one by one??
   return (
     <>
       {currentTab === Tab.Spectrogram && (
@@ -125,9 +110,7 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab, file
       {currentTab === Tab.Time && <TimePlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.Frequency && <FrequencyPlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.IQ && <IQPlot displayedIQ={displayedIQ} />}
-      {currentTab === Tab.ThreeDimensionalVisualization && (
-        <ThreeDimPlot filePaths={filePaths} currentFFT={currentFFT} />
-      )}
+      {currentTab === Tab.ThreeDimensionalVisualization && <ThreeDimPlot multipleIQ={multipleIQ} />}
     </>
   );
 }
