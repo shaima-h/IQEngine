@@ -24,6 +24,7 @@ import TimeSelector from './components/time-selector';
 import { AnnotationViewer } from './components/annotation/annotation-viewer';
 import TimeSelectorMinimap from './components/time-selector-minimap';
 import { useWindowSize } from 'usehooks-ts';
+import { ThreeDimPlot } from './components/three-dim-plot';
 
 export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab }) {
   const {
@@ -105,6 +106,7 @@ export function DisplaySpectrogram({ currentFFT, setCurrentFFT, currentTab }) {
       {currentTab === Tab.Time && <TimePlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.Frequency && <FrequencyPlot displayedIQ={displayedIQ} />}
       {currentTab === Tab.IQ && <IQPlot displayedIQ={displayedIQ} />}
+      {currentTab === Tab.ThreeDimensionalVisualization && <ThreeDimPlot displayedIQ={displayedIQ} />}
     </>
   );
 }
@@ -124,6 +126,7 @@ enum Tab {
   Time,
   Frequency,
   IQ,
+  ThreeDimensionalVisualization,
 }
 
 export function RecordingViewPage() {

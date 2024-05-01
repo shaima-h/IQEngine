@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { convertFloat32ArrayToBase64 } from '@/utils/rf-functions';
 
 interface ThreeDimPlotProps {
-  multipleIQ: Float32Array[];
+  displayedIQ: Float32Array;
 }
 
-export const ThreeDimPlot = ({ multipleIQ }: ThreeDimPlotProps) => {
+export const ThreeDimPlot = ({ displayedIQ }: ThreeDimPlotProps) => {
   const [plotImageData, setPlotImageData] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -31,9 +31,11 @@ export const ThreeDimPlot = ({ multipleIQ }: ThreeDimPlotProps) => {
     };
 
     body = {
-      samples_b64: multipleIQ.map((iqData) => ({
-        samples: convertFloat32ArrayToBase64(iqData),
-      })),
+      samples_b64: [
+        {
+          samples: convertFloat32ArrayToBase64(displayedIQ),
+        },
+      ],
     };
 
     // console.log(body);

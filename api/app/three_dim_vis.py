@@ -23,10 +23,7 @@ class MultipleSamples(BaseModel):
 class SpectrogramData(BaseModel):
     samples_b64: Optional[list[SamplesB64]] = None
 
-# @dataclass
-# class SpectrogramData:
 def generate_plot(samples_list):
-
     fft_size = 1024
     # num_rows = int(np.floor(len(samples_list[0])/fft_size))
     num_rows = 650
@@ -79,7 +76,6 @@ router = APIRouter()
 @router.post('/api/three-dim-plot')
 async def get_plot(spectograms: SpectrogramData):
     print(SpectrogramData)
-    # TODO pass in multiple spectogram data
     samples_list = []
     # iterate through samples in samples_b64
     for samples_obj in spectograms.samples_b64:
